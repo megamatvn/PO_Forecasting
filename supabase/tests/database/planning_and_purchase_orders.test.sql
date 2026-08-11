@@ -34,11 +34,11 @@ insert into public.planning_cycles (
   planning_year
 )
 values (
-  '40000000-0000-0000-0000-000000000001',
+  '40000000-0000-0000-0000-000000000090',
   '10000000-0000-0000-0000-000000000001',
-  'ETX-2026-TEST',
-  'ETX 2026 test cycle',
-  2026
+  'ETX-2090-TEST',
+  'ETX 2090 test cycle',
+  2090
 );
 
 insert into public.plan_versions (
@@ -49,14 +49,14 @@ insert into public.plan_versions (
 )
 values
   (
-    '41000000-0000-0000-0000-000000000001',
-    '40000000-0000-0000-0000-000000000001',
+    '41000000-0000-0000-0000-000000000090',
+    '40000000-0000-0000-0000-000000000090',
     1,
     'draft'
   ),
   (
-    '41000000-0000-0000-0000-000000000002',
-    '40000000-0000-0000-0000-000000000001',
+    '41000000-0000-0000-0000-000000000091',
+    '40000000-0000-0000-0000-000000000090',
     2,
     'approved'
   );
@@ -69,8 +69,8 @@ insert into public.plan_lines (
   target_stock
 )
 values (
-  '42000000-0000-0000-0000-000000000001',
-  '41000000-0000-0000-0000-000000000001',
+  '42000000-0000-0000-0000-000000000090',
+  '41000000-0000-0000-0000-000000000090',
   '20000000-0000-0000-0000-000000000150',
   32,
   0
@@ -87,8 +87,8 @@ insert into public.purchase_batches (
   currency_code
 )
 values (
-  '43000000-0000-0000-0000-000000000001',
-  '41000000-0000-0000-0000-000000000001',
+  '43000000-0000-0000-0000-000000000090',
+  '41000000-0000-0000-0000-000000000090',
   1,
   'PO test',
   '2026-08-01',
@@ -105,7 +105,7 @@ insert into public.purchase_lines (
   ex_price
 )
 values (
-  '43000000-0000-0000-0000-000000000001',
+  '43000000-0000-0000-0000-000000000090',
   '20000000-0000-0000-0000-000000000150',
   10,
   2,
@@ -116,7 +116,7 @@ select is(
   (
     select amount
     from public.purchase_lines
-    where purchase_batch_id = '43000000-0000-0000-0000-000000000001'
+    where purchase_batch_id = '43000000-0000-0000-0000-000000000090'
   ),
   125.00::numeric,
   'Amount always equals Qty multiplied by Ex Price and excludes FOC'
@@ -126,7 +126,7 @@ select throws_ok(
   $$
     update public.plan_versions
     set version_number = 99
-    where id = '41000000-0000-0000-0000-000000000002'
+    where id = '41000000-0000-0000-0000-000000000091'
   $$,
   'P0001',
   'approved_plan_is_immutable',
@@ -137,7 +137,7 @@ select throws_ok(
   $$
     update public.plan_versions
     set status = 'submitted'
-    where id = '41000000-0000-0000-0000-000000000001'
+    where id = '41000000-0000-0000-0000-000000000090'
   $$,
   'P0001',
   'plan_status_transition_requires_rpc',
