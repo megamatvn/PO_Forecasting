@@ -106,5 +106,25 @@ export async function POST(request: Request) {
     return mapCommitError(error?.message ?? "commit_failed");
   }
 
-  return NextResponse.json({ snapshotId });
+  const [snapshotResult, draftResult] = await Promise.all([
+    supabase
+      .from("source_snapshots")
+      .select("created_at")
+      .eq("id", snapshotId)
+      .single(),
+    supabase
+      .from("plan_versions")
+      .select("id", { count: "exact", head: true })
+      .eq("source_snapshot_id", snapshotId)
+      .eq("status", "draft"),
+  ]);
+
+  const metadataComplete = !snapshotResult.error && !draftResult.error;
+
+  return NextResponse.json({
+    snapshotId,
+    committedAt: snapshotResult.data?.created_at ?? new Date().toISOString(),
+    affectedDraftCount: draftResult.count ?? 0,
+    metadataComplete,
+  });
 }

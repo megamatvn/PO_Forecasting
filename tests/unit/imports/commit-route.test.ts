@@ -32,6 +32,33 @@ describe("POST /api/imports/commit", () => {
         data: "60000000-0000-0000-0000-000000000001",
         error: null,
       }),
+      from: vi.fn((table: string) => {
+        if (table === "source_snapshots") {
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: { created_at: "2026-08-11T08:30:00.000Z" },
+                    error: null,
+                  }),
+              }),
+            }),
+          };
+        }
+
+        if (table === "plan_versions") {
+          return {
+            select: () => ({
+              eq: () => ({
+                eq: () => Promise.resolve({ count: 2, error: null }),
+              }),
+            }),
+          };
+        }
+
+        throw new Error(`Unexpected table ${table}`);
+      }),
     });
     const { POST } = await import("@/app/api/imports/commit/route");
 
@@ -46,6 +73,8 @@ describe("POST /api/imports/commit", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       snapshotId: "60000000-0000-0000-0000-000000000001",
+      committedAt: "2026-08-11T08:30:00.000Z",
+      affectedDraftCount: 2,
     });
   });
 
