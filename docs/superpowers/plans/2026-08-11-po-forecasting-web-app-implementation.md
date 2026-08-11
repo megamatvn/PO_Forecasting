@@ -140,7 +140,7 @@ export interface ApprovalRoute {
 - Consumes: Supabase project URL và publishable key qua environment variables.
 - Produces: `createBrowserSupabaseClient()`, `createServerSupabaseClient()` và session refresh proxy.
 
-- [ ] **Step 1: Scaffold Next.js thủ công tại root và cài dependency**
+- [x] **Step 1: Scaffold Next.js thủ công tại root và cài dependency**
 
 ```bash
 corepack enable
@@ -153,7 +153,7 @@ pnpm exec supabase init
 
 Do not run `create-next-app .`: the repository root already contains the approved docs and private workbook. Create the listed config and `src/app` files with `apply_patch`, matching the current Next.js TypeScript/App Router defaults.
 
-- [ ] **Step 2: Write the failing environment contract test**
+- [x] **Step 2: Write the failing environment contract test**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -169,12 +169,12 @@ describe("envSchema", () => {
 });
 ```
 
-- [ ] **Step 3: Run the test and verify RED**
+- [x] **Step 3: Run the test and verify RED**
 
 Run: `pnpm vitest run tests/unit/environment.test.ts`
 Expected: FAIL because `@/lib/validation/env` does not exist.
 
-- [ ] **Step 4: Implement environment and Supabase clients**
+- [x] **Step 4: Implement environment and Supabase clients**
 
 ```ts
 // src/lib/validation/env.ts
@@ -193,12 +193,12 @@ NEXT_PUBLIC_SUPABASE_URL=https://project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=replace-with-publishable-key
 ```
 
-- [ ] **Step 5: Verify baseline**
+- [x] **Step 5: Verify baseline**
 
 Run: `pnpm vitest run tests/unit/environment.test.ts && pnpm lint && pnpm build`
 Expected: PASS; build must not require a database password.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add package.json pnpm-lock.yaml next.config.ts tsconfig.json postcss.config.mjs eslint.config.mjs src supabase/config.toml vitest.config.ts playwright.config.ts .env.example .gitignore tests/unit/environment.test.ts
@@ -223,7 +223,7 @@ git commit -m "chore: scaffold Next.js and Supabase baseline"
 - Consumes: `MoneyInput`, `MonthlyStockInput`.
 - Produces: `calculateAmount(input): string`, `calculateClosingStock(input): number`, `calculateShortage(projectedStock, targetStock): number`, `canonicalizeSku(rawSku, aliases): string`.
 
-- [ ] **Step 1: Write failing example tests**
+- [x] **Step 1: Write failing example tests**
 
 ```ts
 expect(calculateAmount({ qty: 2368, exPrice: "12.50" })).toBe("29600.00");
@@ -232,12 +232,12 @@ expect(calculateShortage(-2368, 0)).toBe(2368);
 expect(canonicalizeSku("ET-015027", new Map([["ET-015027", "ET-015025"]]))).toBe("ET-015025");
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run: `pnpm vitest run tests/unit/domain`
 Expected: FAIL with missing domain modules.
 
-- [ ] **Step 3: Implement pure functions**
+- [x] **Step 3: Implement pure functions**
 
 ```ts
 import Decimal from "decimal.js";
@@ -261,7 +261,7 @@ export function canonicalizeSku(rawSku: string, aliases: ReadonlyMap<string, str
 }
 ```
 
-- [ ] **Step 4: Add property tests**
+- [x] **Step 4: Add property tests**
 
 ```ts
 fc.assert(fc.property(fc.nat(), fc.nat(), fc.nat(), (opening, receipt, demand) => {
@@ -270,7 +270,7 @@ fc.assert(fc.property(fc.nat(), fc.nat(), fc.nat(), (opening, receipt, demand) =
 }));
 ```
 
-- [ ] **Step 5: Verify GREEN and commit**
+- [x] **Step 5: Verify GREEN and commit**
 
 Run: `pnpm vitest run tests/unit/domain --coverage`
 Expected: PASS, including ET-015150 regression.
@@ -295,7 +295,7 @@ git commit -m "feat: add forecast domain calculations"
 - Consumes: Supabase Auth `auth.uid()`.
 - Produces: tables `profiles`, `roles`, `user_roles`, `user_brand_access`, `brands`, `products`, `sku_aliases`; function `canAccessBrand(userId, brandId, action)`.
 
-- [ ] **Step 1: Write failing database tests**
+- [x] **Step 1: Write failing database tests**
 
 ```sql
 select plan(4);
@@ -306,12 +306,12 @@ select policies_are('public', 'brands', array['brands_select_by_access'], 'brand
 select * from finish();
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm supabase db reset && pnpm supabase test db`
 Expected: FAIL because tables and policies do not exist.
 
-- [ ] **Step 3: Implement schema and RLS**
+- [x] **Step 3: Implement schema and RLS**
 
 ```sql
 create type public.app_role as enum ('administrator','planner','approver_l1','approver_l2','viewer');
@@ -344,7 +344,7 @@ create table public.sku_aliases (
 
 Add explicit grants, enable RLS on every table, and create policies that require membership in `user_brand_access`. Seed ETX and the three aliases mapping to ET-015025.
 
-- [ ] **Step 4: Implement UI permission helper and tests**
+- [x] **Step 4: Implement UI permission helper and tests**
 
 ```ts
 export function canPerform(roleSet: ReadonlySet<AppRole>, action: AppAction): boolean {
@@ -360,7 +360,7 @@ export function canPerform(roleSet: ReadonlySet<AppRole>, action: AppAction): bo
 }
 ```
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm supabase db reset && pnpm supabase test db && pnpm vitest run tests/unit/auth`
 Expected: PASS; a user without brand membership cannot select the brand.
@@ -383,7 +383,7 @@ git commit -m "feat: add brand-scoped RBAC and SKU master"
 - Consumes: brand/product master.
 - Produces: `planning_cycles`, `plan_versions`, `plan_lines`, `plan_monthly_demand`, `purchase_batches`, `purchase_lines`; generated `amount`; plan status constraints.
 
-- [ ] **Step 1: Write failing invariant tests**
+- [x] **Step 1: Write failing invariant tests**
 
 ```sql
 select plan(3);
@@ -393,12 +393,12 @@ select col_is_generated('public', 'purchase_lines', 'amount', 'amount is databas
 select * from finish();
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm supabase test db`
 Expected: FAIL because planning tables do not exist.
 
-- [ ] **Step 3: Implement core tables**
+- [x] **Step 3: Implement core tables**
 
 ```sql
 create table public.purchase_lines (
@@ -415,11 +415,11 @@ create table public.purchase_lines (
 
 `purchase_batches` must store `order_date`, `eta_date`, `status`, `currency_code` and `plan_version_id`. `plan_versions` must store `status`, `version_number`, `parent_version_id`, `lock_version` and source snapshot reference.
 
-- [ ] **Step 4: Add grants, RLS and immutable-status trigger**
+- [x] **Step 4: Add grants, RLS and immutable-status trigger**
 
 The trigger must reject UPDATE/DELETE on `plan_versions` with status `submitted`, `review_l1`, `review_l2`, `approved` or `superseded`, except through guarded RPC functions introduced in later tasks.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm supabase db reset && pnpm supabase test db`
 Expected: PASS; inserting `qty=10, ex_price=12.5` yields `amount=125.00`.
@@ -450,7 +450,7 @@ git commit -m "feat: add versioned plans and dynamic PO schema"
 - Consumes: `.xlsx` buffer, canonical SKU map, authenticated Administrator.
 - Produces: `ImportPreview`, `ImportIssue[]`, RPC `commit_import_batch(p_batch_id uuid, p_idempotency_key uuid)`.
 
-- [ ] **Step 1: Write failing parser and normalization tests**
+- [x] **Step 1: Write failing parser and normalization tests**
 
 ```ts
 const rows = await readForecastWorkbook(fixtureBuffer);
@@ -458,12 +458,12 @@ expect(rows).toContainEqual(expect.objectContaining({ rawSku: "ET-015150", curre
 expect(normalizeRows(rows, aliasMap).find((row) => row.rawSku === "ET-015027")?.canonicalSku).toBe("ET-015025");
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm vitest run tests/unit/imports`
 Expected: FAIL because import modules do not exist.
 
-- [ ] **Step 3: Implement reader and validation contract**
+- [x] **Step 3: Implement reader and validation contract**
 
 ```ts
 export interface ImportIssue {
@@ -484,11 +484,11 @@ export interface ImportPreview {
 
 ExcelJS must read values only from explicitly mapped sheets/columns. Reject `.xlsm`, files larger than the configured limit, unknown mandatory sheets and any batch containing an `error`.
 
-- [ ] **Step 4: Implement staging schema and commit RPC**
+- [x] **Step 4: Implement staging schema and commit RPC**
 
 The migration creates `import_batches`, `import_staging_rows`, `import_issues`, `source_snapshots`, a unique checksum/idempotency constraint, private Storage metadata, and one RPC that commits all accepted rows in a single transaction.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm vitest run tests/unit/imports && pnpm supabase test db`
 Expected: PASS; importing the same checksum twice does not create two committed snapshots.
@@ -514,7 +514,7 @@ git commit -m "feat: add safe two-phase Excel import"
 - Consumes: current inventory, monthly demand, active purchase batches and planning settings.
 - Produces: `MonthlyProjection[]`, `StockAlert[]`, `PurchaseRecommendation[]`, security-invoker view `plan_projection_view`.
 
-- [ ] **Step 1: Write ET-015150 regression test**
+- [x] **Step 1: Write ET-015150 regression test**
 
 ```ts
 const result = projectPlan({
@@ -528,12 +528,12 @@ expect(recommendPurchase(result, 0).minimumQty).toBe(2368);
 expect(recommendPurchase(result, 0).severity).toBe("critical");
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm vitest run tests/unit/planning`
 Expected: FAIL because projection modules do not exist.
 
-- [ ] **Step 3: Implement projection and recommendation**
+- [x] **Step 3: Implement projection and recommendation**
 
 ```ts
 export interface PurchaseRecommendation {
@@ -546,11 +546,11 @@ export interface PurchaseRecommendation {
 
 Cancelled purchase batches contribute zero receipt. FOC contributes to stock. If safety stock is absent, `recommendedQty === minimumQty`.
 
-- [ ] **Step 4: Implement RLS-respecting projection view**
+- [x] **Step 4: Implement RLS-respecting projection view**
 
 Create the view with `security_invoker = true`; index `brand_id`, `plan_version_id`, `product_id`, `eta_date` and all columns used by RLS filters.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm vitest run tests/unit/planning && pnpm supabase test db`
 Expected: PASS with final ET-015150 stock `-2368` and minimum recommendation `2368`.
@@ -574,7 +574,7 @@ git commit -m "feat: add stock projection and PO recommendations"
 - Consumes: `ApprovalRouteInput`, brand policy, plan amount and exception flags.
 - Produces: `routeApproval(input): ApprovalRoute`, RPCs `submit_plan`, `approve_step`, `request_changes`.
 
-- [ ] **Step 1: Write failing routing table tests**
+- [x] **Step 1: Write failing routing table tests**
 
 ```ts
 expect(routeApproval({ mode: "fixed_two_level", amount: "10", threshold: null, hasEscalationException: false })).toEqual({ levels: 2, reason: "fixed" });
@@ -583,20 +583,20 @@ expect(routeApproval({ mode: "threshold", amount: "1000", threshold: "1000", has
 expect(routeApproval({ mode: "threshold", amount: "1", threshold: "1000", hasEscalationException: true })).toEqual({ levels: 2, reason: "exception" });
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm vitest run tests/unit/domain/approval-routing.test.ts`
 Expected: FAIL because routing module does not exist.
 
-- [ ] **Step 3: Implement routing and database schema**
+- [x] **Step 3: Implement routing and database schema**
 
 Create `approval_policies`, `approval_policy_brands`, `approval_requests`, `approval_steps`. Seed one global fixed-two-level policy. Add an exclusion constraint or transaction check preventing overlapping effective policies for one brand.
 
-- [ ] **Step 4: Implement atomic RPC state transitions**
+- [x] **Step 4: Implement atomic RPC state transitions**
 
 `submit_plan` captures policy mode, threshold, currency, amount, required levels and exception flags. `approve_step` verifies current user role/brand access and advances exactly one state. `request_changes` closes the request without mutating its plan snapshot.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm vitest run tests/unit/domain/approval-routing.test.ts && pnpm supabase test db`
 Expected: PASS; default policy routes two levels and threshold branch behaves at the boundary.
@@ -620,7 +620,7 @@ git commit -m "feat: add configurable approval policy engine"
 - Consumes: immutable plan snapshot and `lock_version`.
 - Produces: RPC `create_plan_revision`, append-only `audit_events`, `PlanDiff`, conflict error code `PLAN_VERSION_CONFLICT`.
 
-- [ ] **Step 1: Write failing immutable/concurrency tests**
+- [x] **Step 1: Write failing immutable/concurrency tests**
 
 ```sql
 select throws_ok(
@@ -639,20 +639,20 @@ expect(diffPlan(before, after)).toContainEqual({
 });
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm supabase test db && pnpm vitest run tests/unit/versions`
 Expected: FAIL because revision/audit implementation is missing.
 
-- [ ] **Step 3: Implement RPC and audit trigger**
+- [x] **Step 3: Implement RPC and audit trigger**
 
 `create_plan_revision` copies snapshot content, sets `parent_version_id`, increments version number, resets status to `draft`, and writes one audit event in the same transaction. Approved source remains unchanged.
 
-- [ ] **Step 4: Implement compare-and-swap save**
+- [x] **Step 4: Implement compare-and-swap save**
 
 Draft update requires `WHERE id = p_id AND lock_version = p_expected_lock_version`, increments `lock_version`, and raises `PLAN_VERSION_CONFLICT` when zero rows update. All action RPCs accept an idempotency key protected by a unique constraint.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm supabase test db && pnpm vitest run tests/unit/versions`
 Expected: PASS; duplicate action key has no second side effect.
@@ -680,7 +680,7 @@ git commit -m "feat: add immutable revisions and concurrency controls"
 - Consumes: Supabase cookie session and brand access rows.
 - Produces: authenticated route group, role-aware sidebar, brand selector.
 
-- [ ] **Step 1: Write failing component tests**
+- [x] **Step 1: Write failing component tests**
 
 ```tsx
 render(<AppSidebar access={{ roles: ["viewer"], brandIds: ["etx"] }} />);
@@ -688,20 +688,20 @@ expect(screen.getByRole("link", { name: "Forecast Planning" })).toBeVisible();
 expect(screen.queryByRole("link", { name: "Chính sách duyệt" })).not.toBeInTheDocument();
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm vitest run tests/components/auth tests/components/navigation`
 Expected: FAIL because auth UI does not exist.
 
-- [ ] **Step 3: Implement login, callback and session refresh**
+- [x] **Step 3: Implement login, callback and session refresh**
 
 Use `@supabase/ssr` with cookie sessions. Root proxy refreshes auth; protected layout redirects anonymous users to `/login`; login errors use Vietnamese copy and do not reveal whether an email exists.
 
-- [ ] **Step 4: Implement role/brand navigation**
+- [x] **Step 4: Implement role/brand navigation**
 
 Navigation items are derived from `canPerform`, while page loaders still rely on RLS. Brand selector only shows authorized brands.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm vitest run tests/components/auth tests/components/navigation && pnpm build`
 Expected: PASS; Viewer cannot see administration links.
@@ -727,7 +727,7 @@ git commit -m "feat: add authenticated brand-scoped app shell"
 - Consumes: preview and commit routes from Task 5.
 - Produces: upload → preview diff → warning confirmation → atomic commit flow.
 
-- [ ] **Step 1: Write failing workflow test**
+- [x] **Step 1: Write failing workflow test**
 
 ```tsx
 await user.upload(screen.getByLabelText("Chọn file Excel"), workbookFile);
@@ -735,20 +735,20 @@ expect(await screen.findByText("ET-015027 → ET-015025")).toBeVisible();
 expect(screen.getByRole("button", { name: "Xác nhận import" })).toBeEnabled();
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm vitest run tests/components/imports`
 Expected: FAIL because import UI does not exist.
 
-- [ ] **Step 3: Implement upload and preview states**
+- [x] **Step 3: Implement upload and preview states**
 
 Render states `idle`, `uploading`, `preview`, `committing`, `success`, `error`. Errors disable commit; warnings require an explicit checkbox. Display added, changed, removed and ignored rows separately.
 
-- [ ] **Step 4: Implement retry-safe commit**
+- [x] **Step 4: Implement retry-safe commit**
 
 Generate one UUID idempotency key per user intent and reuse it for network retry. On success, show snapshot timestamp and affected Draft count.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm vitest run tests/components/imports && pnpm build`
 Expected: PASS; batch with an error cannot be committed.
@@ -778,7 +778,7 @@ git commit -m "feat: add Excel import review workflow"
 - Consumes: projections, PO batches, role access and `lock_version`.
 - Produces: editable Draft grid, KPI, Critical alerts, PO proposal and conflict dialog.
 
-- [ ] **Step 1: Write failing ET-015150 UI test**
+- [x] **Step 1: Write failing ET-015150 UI test**
 
 ```tsx
 render(<PlanningWorkspace initialPlan={et015150Fixture} />);
@@ -786,20 +786,20 @@ expect(screen.getByText("ET-015150 dự kiến thiếu 2.368 sản phẩm")).toB
 expect(screen.getByRole("button", { name: "Tạo PO đề xuất 2.368" })).toBeEnabled();
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm vitest run tests/components/planning`
 Expected: FAIL because planning components do not exist.
 
-- [ ] **Step 3: Implement layout and TanStack grid**
+- [x] **Step 3: Implement layout and TanStack grid**
 
 Pin SKU/name columns; mark editable Qty/FOC/Ex Price cells; render Amount and Projected Stock read-only. KPI strip shows target, committed, gap, Critical count and PO count. All severity cells include textual badges.
 
-- [ ] **Step 4: Implement autosave and conflict UX**
+- [x] **Step 4: Implement autosave and conflict UX**
 
 Debounce Draft save, show `Đang lưu`, `Đã lưu` and `Lỗi lưu`. A `PLAN_VERSION_CONFLICT` response opens a diff dialog and never overwrites remote data silently.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm vitest run tests/components/planning && pnpm build`
 Expected: PASS at 1366×768 viewport; ET-015150 alert and proposal are visible without horizontal scrolling.
@@ -828,7 +828,7 @@ git commit -m "feat: add forecast planning workspace"
 - Consumes: approval RPCs and `PlanDiff`.
 - Produces: submit preview, approval inbox, policy assignment and revision comparison.
 
-- [ ] **Step 1: Write failing approval UI tests**
+- [x] **Step 1: Write failing approval UI tests**
 
 ```tsx
 render(<SubmitPlanDialog route={{ levels: 2, reason: "fixed" }} />);
@@ -836,20 +836,20 @@ expect(screen.getByText("Kế hoạch sẽ được duyệt 2 cấp")).toBeVisib
 expect(screen.getByText("Manager → CFO/CEO")).toBeVisible();
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm vitest run tests/components/approvals tests/components/versions`
 Expected: FAIL because approval/version UI does not exist.
 
-- [ ] **Step 3: Implement approval inbox and review**
+- [x] **Step 3: Implement approval inbox and review**
 
 Review page prioritizes exceptions, Amount change, budget impact, shortage impact and version diff. Approve/Request changes requires confirmation; Request changes requires a non-empty reason.
 
-- [ ] **Step 4: Implement policy editor and brand bulk assignment**
+- [x] **Step 4: Implement policy editor and brand bulk assignment**
 
 Administrator can choose fixed-two-level or threshold, currency, threshold amount, escalation flags, effective dates and one/many brands. UI warns that policy changes do not affect in-flight requests.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm vitest run tests/components/approvals tests/components/versions && pnpm build`
 Expected: PASS; Viewer cannot render decision controls and in-flight policy snapshot remains unchanged.
@@ -876,7 +876,7 @@ git commit -m "feat: add approvals policies and version review"
 - Consumes: approved/draft plan projection and purchase batches.
 - Produces: dashboard, PO timeline and `.xlsx` export generated from canonical data.
 
-- [ ] **Step 1: Write failing export test**
+- [x] **Step 1: Write failing export test**
 
 ```ts
 const workbook = await exportPlanToWorkbook(planFixture);
@@ -885,20 +885,20 @@ expect(sheet?.getCell("A2").value).toBe("ET-015150");
 expect(sheet?.getCell("H2").value).toBe(2368 * 12.5);
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `pnpm vitest run tests/unit/reports tests/components/reports`
 Expected: FAIL because reporting modules do not exist.
 
-- [ ] **Step 3: Implement dashboard and timeline**
+- [x] **Step 3: Implement dashboard and timeline**
 
 Render target amount, committed amount, gap, Critical count, PO count, dynamic timeline and status legend. Filters include brand, cycle, status and time range.
 
-- [ ] **Step 4: Implement export from canonical data**
+- [x] **Step 4: Implement export from canonical data**
 
 Export values, not copied workbook formulas. Amount is generated from canonical Qty/Ex Price. Include metadata sheet with plan version, source snapshot, export user and export timestamp.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `pnpm vitest run tests/unit/reports tests/components/reports && pnpm build`
 Expected: PASS; exported Amount equals Qty × Ex Price.
@@ -927,7 +927,7 @@ git commit -m "feat: add planning dashboard and Excel export"
 - Consumes: complete MVP.
 - Produces: reproducible local workflow, CI gates and acceptance evidence.
 
-- [ ] **Step 1: Write failing E2E journeys**
+- [x] **Step 1: Write failing E2E journeys**
 
 ```ts
 test("ET-015150 goes through default two-level approval", async ({ page }) => {
@@ -939,16 +939,16 @@ test("ET-015150 goes through default two-level approval", async ({ page }) => {
 });
 ```
 
-- [ ] **Step 2: Run E2E and verify RED**
+- [x] **Step 2: Run E2E and verify RED**
 
 Run: `pnpm exec playwright test --project=chromium`
 Expected: FAIL until test users, fixtures and all routes are wired together.
 
-- [ ] **Step 3: Add deterministic test setup**
+- [x] **Step 3: Add deterministic test setup**
 
 Use Supabase seed users for all five roles, isolate each test with a unique planning cycle, and reset test data through a test-only authenticated helper unavailable in production builds.
 
-- [ ] **Step 4: Add CI gates**
+- [x] **Step 4: Add CI gates**
 
 `.github/workflows/ci.yml` runs:
 
@@ -965,7 +965,7 @@ Use Supabase seed users for all five roles, isolate each test with a unique plan
 
 CI must also scan tracked files and built assets for forbidden secret patterns and fail if any database URL/password/service-role key is detected.
 
-- [ ] **Step 5: Run full acceptance verification**
+- [x] **Step 5: Run full acceptance verification**
 
 Run:
 
@@ -982,7 +982,7 @@ git grep -n -E 'postgresql://|service_role.*=' -- ':!docs/superpowers/plans/*'
 
 Expected: all quality commands PASS; final grep returns no matches.
 
-- [ ] **Step 6: Document local operation and commit**
+- [x] **Step 6: Document local operation and commit**
 
 README must include prerequisites, `.env.local` setup without secret values, Supabase start/reset commands, test commands, database migration workflow, login seed accounts and GitHub workflow behavior.
 
@@ -995,20 +995,33 @@ git commit -m "test: add end-to-end acceptance and CI gates"
 
 ## Final MVP Verification Checklist
 
-- [ ] ET-015150 regression returns projected stock `-2368` and recommendation `2368`.
-- [ ] Database-generated Amount equals Qty × Ex Price for all purchase lines.
-- [ ] Three Đặc trị xanh aliases resolve to ET-015025.
-- [ ] Import error blocks batch; warning requires confirmation; duplicate checksum is idempotent.
-- [ ] Default policy routes two approval levels.
-- [ ] Threshold and exception boundaries route correctly.
-- [ ] Submitted/Approved versions are immutable; revisions preserve lineage.
-- [ ] RLS matrix passes for every role and brand boundary.
-- [ ] Concurrent Draft edits produce a conflict instead of silent overwrite.
-- [ ] Export is produced from canonical data and contains correct Amount.
-- [ ] No secret appears in tracked files, Git history or browser bundle.
-- [ ] Lint, type-check, unit, database, build and Chromium E2E pass with fresh evidence.
+- [x] ET-015150 regression returns projected stock `-2368` and recommendation `2368`.
+- [x] Database-generated Amount equals Qty × Ex Price for all purchase lines.
+- [x] Three Đặc trị xanh aliases resolve to ET-015025.
+- [x] Import error blocks batch; warning requires confirmation; duplicate checksum is idempotent.
+- [x] Default policy routes two approval levels.
+- [x] Threshold and exception boundaries route correctly.
+- [x] Submitted/Approved versions are immutable; revisions preserve lineage.
+- [x] RLS matrix passes for every role and brand boundary.
+- [x] Concurrent Draft edits produce a conflict instead of silent overwrite.
+- [x] Export is produced from canonical data and contains correct Amount.
+- [x] No secret appears in tracked files, Git history or browser bundle.
+- [x] Lint, type-check, unit, database, build and Chromium E2E pass with fresh evidence.
 
-## Execution Handoff
+## Execution Record
+
+- Status: **Completed** on 2026-08-11.
+- Verified implementation head: `a93e8636192d1c77ea46e1a7da3380eb72016aba` on `main`.
+- GitHub Actions evidence: [CI run 31511329627](https://github.com/megamatvn/PO_Forecasting/actions/runs/31511329627) passed every gate.
+- Frontend evidence: lint, TypeScript, 81 Vitest tests with coverage thresholds, production build and production-only harness protection all passed.
+- Database evidence: all 115 remote pgTAP assertions passed; Supabase `db lint --level warning --fail-on warning` returned no schema errors.
+- Browser evidence: all four Chromium journeys passed against isolated Supabase Auth, PostgreSQL, RLS and RPC services.
+- Security evidence: source/history and production browser bundle secret scans passed; `.env.local` remains ignored.
+- Remote schema: migrations through `20260811000930_auth_profile_onboarding.sql` are applied to project `gouplpvviajaihtmoymv`.
+
+## Original Execution Handoff
+
+The guidance below is retained as historical context; implementation is complete.
 
 Recommended execution mode is **Subagent-Driven Development** because database, import, domain, UI and test slices have distinct review gates. Use one fresh implementation agent per task and complete both spec-compliance review and code-quality review before advancing.
 
