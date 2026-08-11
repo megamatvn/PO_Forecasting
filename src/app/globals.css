@@ -1152,6 +1152,202 @@ h3 {
   }
 }
 
+.dashboard-page {
+  gap: 22px;
+}
+
+.dashboard-heading {
+  align-items: flex-end;
+}
+
+.dashboard-filters {
+  align-items: end;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(140px, 1fr)) auto;
+  padding: 16px;
+}
+
+.dashboard-filters label {
+  display: grid;
+  gap: 6px;
+}
+
+.dashboard-filters label > span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dashboard-filters select {
+  background: #f7faf8;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  min-height: 42px;
+  padding: 0 10px;
+}
+
+.dashboard-kpis {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.dashboard-kpi {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  display: grid;
+  gap: 8px;
+  min-height: 116px;
+  padding: 18px;
+}
+
+.dashboard-kpi span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.dashboard-kpi strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 1.8vw, 1.75rem);
+}
+
+.dashboard-kpi--positive { border-top: 3px solid #1d7a5b; }
+.dashboard-kpi--attention { border-top: 3px solid #d99d35; }
+.dashboard-kpi--critical { border-top: 3px solid #c4544f; }
+
+.dashboard-critical {
+  align-items: center;
+  background: linear-gradient(110deg, #fff4ee, #fffaf7);
+  border: 1px solid #efc6b4;
+  border-radius: 20px;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  padding: 22px 24px;
+}
+
+.dashboard-critical h2 { margin: 4px 0 6px; }
+.dashboard-critical p:last-child { color: #76564b; margin: 0; }
+
+.po-timeline {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 22px;
+}
+
+.po-timeline > header {
+  align-items: flex-start;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.po-timeline > header h2 { margin: 5px 0 0; }
+
+.po-timeline__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.po-status {
+  background: #edf2ef;
+  border-radius: 999px;
+  color: #4d625b;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 5px 9px;
+}
+
+.po-status--planned { background: #fff1d6; color: #875f19; }
+.po-status--submitted { background: #e8efff; color: #405d9b; }
+.po-status--confirmed { background: #ddf3ea; color: #17634c; }
+.po-status--received { background: #dff3f4; color: #176169; }
+.po-status--cancelled { background: #f5e4e3; color: #94423e; }
+
+.po-timeline__list {
+  display: grid;
+  gap: 0;
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+}
+
+.po-timeline__list > li {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 14px 1fr;
+  position: relative;
+}
+
+.po-timeline__list > li:not(:last-child)::before {
+  background: #d8e3de;
+  content: "";
+  height: 100%;
+  left: 6px;
+  position: absolute;
+  top: 14px;
+  width: 2px;
+}
+
+.po-timeline__marker {
+  background: #1d7a5b;
+  border: 3px solid #dff2ea;
+  border-radius: 50%;
+  height: 14px;
+  margin-top: 18px;
+  position: relative;
+  width: 14px;
+  z-index: 1;
+}
+
+.po-timeline__list article {
+  border-bottom: 1px solid var(--line);
+  padding: 14px 0 20px;
+}
+
+.po-timeline__list li:last-child article { border-bottom: 0; }
+
+.po-timeline__list article > header {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.po-timeline__list h3 { margin: 3px 0 0; }
+.po-timeline__list small { color: var(--muted); }
+
+.po-timeline__list dl {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 15px 0 0;
+}
+
+.po-timeline__list dl div { display: grid; gap: 3px; }
+.po-timeline__list dt { color: var(--muted); font-size: 0.72rem; }
+.po-timeline__list dd { font-weight: 700; margin: 0; }
+
+@media (max-width: 1050px) {
+  .dashboard-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .dashboard-filters, .dashboard-kpis { grid-template-columns: 1fr; }
+  .dashboard-critical, .po-timeline > header { align-items: stretch; flex-direction: column; }
+  .po-timeline__list dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 .approval-dialog__panel {
   width: min(38rem, 100%);
   border-top: 4px solid var(--gold);

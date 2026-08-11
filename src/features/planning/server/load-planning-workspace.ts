@@ -74,6 +74,7 @@ function strongestSeverity(rows: readonly ProjectionRow[]): PlanningSeverity {
 export async function loadPlanningWorkspace(
   cycleIdOrCode: string,
   access: CurrentAccess,
+  versionId?: string,
 ): Promise<PlanningWorkspaceView | null> {
   const supabase = await createServerSupabaseClient();
   let cycleQuery = supabase
@@ -97,7 +98,10 @@ export async function loadPlanningWorkspace(
 
   if (versionError || !versionData?.length) return null;
   const versions = versionData as VersionRow[];
-  const version = versions.find((item) => item.status === "draft") ?? versions[0];
+  const version = versionId
+    ? versions.find((item) => item.id === versionId)
+    : versions.find((item) => item.status === "draft") ?? versions[0];
+  if (!version) return null;
 
   const { data: lineData, error: lineError } = await supabase
     .from("plan_lines")
