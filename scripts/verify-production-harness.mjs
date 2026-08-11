@@ -1,8 +1,10 @@
 import { spawn } from "node:child_process";
+import { resolve } from "node:path";
 
 const port = "3200";
 const resetUrl = `http://127.0.0.1:${port}/api/e2e/reset`;
-const server = spawn("pnpm", ["start", "--port", port], {
+const nextBinary = resolve("node_modules/next/dist/bin/next");
+const server = spawn(process.execPath, [nextBinary, "start", "--port", port], {
   env: { ...process.env, E2E_MODE: "true" },
   stdio: ["ignore", "pipe", "pipe"],
 });
@@ -33,5 +35,13 @@ try {
   }
   console.log("Production E2E reset route is unavailable (404).");
 } finally {
-  server.kill("SIGTERM");
+  if (server.exitCode === null) {
+    const exited = new Promise((resolveExit) => server.once("exit", resolveExit));
+    server.kill("SIGTERM");
+    await Promise.race([
+      exited,
+      new Promise((resolveTimeout) => setTimeout(resolveTimeout, 5_000)),
+    ]);
+    if (server.exitCode === null) server.kill("SIGKILL");
+  }
 }
