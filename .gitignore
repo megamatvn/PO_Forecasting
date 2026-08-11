@@ -10,6 +10,7 @@ out/
 coverage/
 playwright-report/
 test-results/
+*.tsbuildinfo
 
 # Local tooling and exploratory analysis
 .superpowers/
@@ -24,3 +25,4 @@ scratch/
 # Supabase local state
 supabase/.temp/
 supabase/.branches/
+.worktrees/
