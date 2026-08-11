@@ -1,0 +1,26 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+
+# Local tooling and exploratory analysis
+.superpowers/
+scratch/
+.DS_Store
+
+# Private source workbooks and generated spreadsheet artifacts
+*.xlsx
+*.xls
+*.xlsm
+
+# Supabase local state
+supabase/.temp/
+supabase/.branches/
