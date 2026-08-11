@@ -23,6 +23,7 @@ export default async function PlanningPage({ params, searchParams }: PlanningPag
   return (
     <div className="page-shell planning-page">
       <PlanningWorkspace
+        key={plan.version.id}
         initialPlan={plan}
         presenceDisplayName={access.displayName}
       />

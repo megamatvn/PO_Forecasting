@@ -63,6 +63,13 @@ interface PurchaseLineRow {
   amount: string;
 }
 
+interface ProductPriceRow {
+  product_id: string;
+  ex_price: string;
+  effective_from: string;
+  effective_to: string | null;
+}
+
 interface ProjectionRow {
   product_id: string;
   projection_month: string;
@@ -121,8 +128,9 @@ export async function loadPlanningWorkspace(
   const planLines = lineData as unknown as PlanLineRow[];
   const lineIds = planLines.map((line) => line.id);
   const productIds = planLines.map((line) => line.product_id);
+  const today = new Date().toISOString().slice(0, 10);
 
-  const [demandResult, batchResult, projectionResult] = await Promise.all([
+  const [demandResult, batchResult, projectionResult, priceResult] = await Promise.all([
     lineIds.length
       ? supabase
           .from("plan_monthly_demand")
@@ -145,6 +153,15 @@ export async function loadPlanningWorkspace(
           .in("product_id", productIds)
           .order("projection_month")
       : Promise.resolve({ data: [], error: null }),
+    productIds.length
+      ? supabase
+          .from("product_prices")
+          .select("product_id, ex_price, effective_from, effective_to")
+          .in("product_id", productIds)
+          .lte("effective_from", today)
+          .or(`effective_to.is.null,effective_to.gte.${today}`)
+          .order("effective_from", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   const { data: settingsData, error: settingsError } = await supabase
@@ -153,7 +170,13 @@ export async function loadPlanningWorkspace(
     .eq("brand_id", cycle.brand_id)
     .maybeSingle();
 
-  if (demandResult.error || batchResult.error || projectionResult.error || settingsError) {
+  if (
+    demandResult.error ||
+    batchResult.error ||
+    projectionResult.error ||
+    priceResult.error ||
+    settingsError
+  ) {
     return null;
   }
 
@@ -171,6 +194,12 @@ export async function loadPlanningWorkspace(
   const demands = (demandResult.data ?? []) as DemandRow[];
   const purchaseLines = (purchaseResult.data ?? []) as PurchaseLineRow[];
   const projections = (projectionResult.data ?? []) as ProjectionRow[];
+  const pricesByProduct = new Map<string, string>();
+  for (const price of (priceResult.data ?? []) as ProductPriceRow[]) {
+    if (!pricesByProduct.has(price.product_id)) {
+      pricesByProduct.set(price.product_id, String(price.ex_price));
+    }
+  }
   const settings = settingsData as PlanningSettingsRow | null;
   const plannedBatchIds = new Set(
     batches.filter((batch) => batch.status === "planned").map((batch) => batch.id),
@@ -191,7 +220,9 @@ export async function loadPlanningWorkspace(
     );
     const qty = editablePurchase?.qty ?? 0;
     const focQty = editablePurchase?.foc_qty ?? 0;
-    const exPrice = editablePurchase?.ex_price ?? "0";
+    const exPrice = editablePurchase
+      ? String(editablePurchase.ex_price)
+      : pricesByProduct.get(line.product_id) ?? "0";
     const projectedStock = finalProjection?.closing_stock ?? line.opening_stock;
     const recommendedQty = Math.max(
       0,

@@ -64,7 +64,7 @@ test("ET-015150 đi qua Auth, import, PO và duyệt hai cấp trên Supabase", 
     await qty.fill("2000");
     await expect(page.getByText("Đã lưu", { exact: true })).toBeVisible();
     await page.goto(`/versions/${revisionId}`);
-    await expect(page.getByText(/1 thay đổi/)).toBeVisible();
+    await expect(page.getByText(/2 thay đổi/)).toBeVisible();
   } finally {
     await unlink(workbookPath).catch(() => undefined);
   }
