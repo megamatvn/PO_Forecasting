@@ -1010,14 +1010,14 @@ git commit -m "test: add end-to-end acceptance and CI gates"
 
 ## Execution Record
 
-- Status: **Implementation complete; final CI evidence recorded in the audit file** on 2026-08-12.
+- Status: **Implementation complete; Final Audit PASS** on 2026-08-12.
 - Final audit: [`docs/audits/2026-08-12-final-audit.md`](../../audits/2026-08-12-final-audit.md).
 - The final implementation extends the original MVP with source workbook materialization, configurable planning settings/target cover, persisted revision diffs, revision UI/API, derived approval exceptions, missing Ex Price submit guard and default settings for new brands.
 - Security hardening includes active-profile enforcement, column-scoped self-update, brand-scoped administrator replacement, active-administrator invariant locking, idempotent/audited access changes and expanded secret scanning.
 - Fresh local application evidence: 35 Vitest files / 88 tests, lint, TypeScript, production build, browser-bundle secret scan and production reset-route harness all pass.
+- Fresh local E2E evidence: 4 Chromium journeys pass on an isolated Supabase stack, including import → approval → revision diff, threshold routing and CAS conflict.
 - Fresh remote database evidence: 16 pgTAP files / 138 assertions pass; Supabase `db lint --level warning --fail-on warning` reports no schema errors; migration ledger is synchronized through `20260811001040_fix_submit_derived_exceptions.sql`.
-- Local Docker/Colima could not start Supabase because the scoped PostgreSQL volume reported `No space left on device` while creating `pg_wal`; the isolated Ubuntu CI workflow is the authoritative local-E2E evidence.
-- GitHub Actions commit/run URL and Chromium E2E result are maintained in the audit file after the final push.
+- GitHub Actions final evidence: commit [`134885c`](https://github.com/megamatvn/PO_Forecasting/commit/134885cebd2ca9e198034f7a6be39b3e805e7979), [CI run 31521272096](https://github.com/megamatvn/PO_Forecasting/actions/runs/31521272096) PASS.
 
 ## Original Execution Handoff
 
