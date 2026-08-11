@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SubmitPlanDialog } from "@/features/approvals/components/approval-review";
 import { KpiStrip } from "@/features/planning/components/kpi-strip";
 import { PlanningGrid } from "@/features/planning/components/planning-grid";
 import { PlanningHeader } from "@/features/planning/components/planning-header";
@@ -17,12 +18,19 @@ import type {
   PlanningRowView,
   PlanningWorkspaceView,
 } from "@/features/planning/planning-types";
+import type { ApprovalRoute } from "@/lib/domain/types";
 
 interface PlanningWorkspaceProps {
   initialPlan: PlanningWorkspaceView;
   saveDraft?: DraftSaver;
   autosaveDelayMs?: number;
   presenceDisplayName?: string;
+  previewApproval?: (
+    exceptionFlags: Record<string, boolean>,
+  ) => Promise<ApprovalRoute>;
+  submitApproval?: (
+    exceptionFlags: Record<string, boolean>,
+  ) => Promise<void>;
 }
 
 const saveLabels = {
@@ -38,8 +46,13 @@ export function PlanningWorkspace({
   saveDraft = httpDraftSaver,
   autosaveDelayMs,
   presenceDisplayName,
+  previewApproval,
+  submitApproval,
 }: PlanningWorkspaceProps) {
   const [plan, setPlan] = useState(initialPlan);
+  const [approvalRoute, setApprovalRoute] = useState<ApprovalRoute | null>(null);
+  const [approvalLoading, setApprovalLoading] = useState(false);
+  const [approvalError, setApprovalError] = useState<string | null>(null);
   const autosave = useDraftAutosave({
     planVersionId: plan.version.id,
     initialLockVersion: plan.version.lockVersion,
@@ -114,6 +127,66 @@ export function PlanningWorkspace({
     updateRow(row.planLineId, { qty: row.recommendedQty });
   }
 
+  function getExceptionFlags() {
+    return {
+      criticalShortage: plan.rows.some((row) => row.severity === "critical"),
+    };
+  }
+
+  async function requestApprovalRoute() {
+    setApprovalLoading(true);
+    setApprovalError(null);
+    try {
+      const flags = getExceptionFlags();
+      if (previewApproval) {
+        setApprovalRoute(await previewApproval(flags));
+        return;
+      }
+
+      const response = await fetch(`/api/planning/${plan.version.id}/submit`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "preview", exceptionFlags: flags }),
+      });
+      if (!response.ok) throw new Error("approval_preview_failed");
+      const payload = (await response.json()) as { route: ApprovalRoute };
+      setApprovalRoute(payload.route);
+    } catch {
+      setApprovalError("Không thể kiểm tra luồng duyệt. Vui lòng thử lại.");
+    } finally {
+      setApprovalLoading(false);
+    }
+  }
+
+  async function confirmApprovalSubmission() {
+    setApprovalLoading(true);
+    setApprovalError(null);
+    try {
+      const flags = getExceptionFlags();
+      if (submitApproval) {
+        await submitApproval(flags);
+        setApprovalRoute(null);
+        return;
+      }
+
+      const response = await fetch(`/api/planning/${plan.version.id}/submit`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "submit",
+          exceptionFlags: flags,
+          idempotencyKey: crypto.randomUUID(),
+        }),
+      });
+      if (!response.ok) throw new Error("approval_submit_failed");
+      window.location.reload();
+    } catch {
+      setApprovalError("Không thể gửi duyệt. Kế hoạch chưa bị thay đổi.");
+    } finally {
+      setApprovalLoading(false);
+    }
+  }
+
   return (
     <div className="planning-workspace">
       <PlanningHeader
@@ -122,6 +195,25 @@ export function PlanningWorkspace({
         viewerCount={viewerCount}
       />
       <KpiStrip plan={plan} />
+      <div className="planning-approval-toolbar">
+        <div>
+          <strong>Sẵn sàng chuyển bước?</strong>
+          <span>Hệ thống sẽ hiển thị đúng luồng duyệt đang áp dụng trước khi gửi.</span>
+        </div>
+        <button
+          className="button button--primary"
+          type="button"
+          disabled={!plan.canEdit || approvalLoading}
+          onClick={requestApprovalRoute}
+        >
+          {approvalLoading ? "Đang kiểm tra…" : "Kiểm tra & gửi duyệt"}
+        </button>
+      </div>
+      {approvalError ? (
+        <div className="form-alert form-alert--error" role="alert">
+          {approvalError}
+        </div>
+      ) : null}
       {priorityAlert ? (
         <StockAlert
           row={priorityAlert}
@@ -175,6 +267,14 @@ export function PlanningWorkspace({
             </div>
           </div>
         </div>
+      ) : null}
+      {approvalRoute ? (
+        <SubmitPlanDialog
+          open
+          route={approvalRoute}
+          onCancel={() => setApprovalRoute(null)}
+          onConfirm={confirmApprovalSubmission}
+        />
       ) : null}
     </div>
   );
