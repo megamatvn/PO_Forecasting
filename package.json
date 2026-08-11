@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:db:remote": "node --env-file-if-exists=.env.local scripts/run-database-tests.mjs",
     "e2e": "playwright test",
     "supabase": "supabase"
   },
@@ -41,6 +42,7 @@
     "eslint-config-next": "latest",
     "fast-check": "latest",
     "jsdom": "latest",
+    "postgres": "^3.4.9",
     "supabase": "latest",
     "tailwindcss": "latest",
     "typescript": "^6.0.2",
