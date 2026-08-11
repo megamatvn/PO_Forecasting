@@ -28,7 +28,7 @@ export function PoTimeline({ currencyCode, batches }: PoTimelineProps) {
   });
 
   return (
-    <section className="po-timeline" aria-labelledby="po-timeline-title">
+    <section id="po-timeline" className="po-timeline" aria-labelledby="po-timeline-title">
       <header>
         <div>
           <p className="section-index">Lịch cung ứng</p>

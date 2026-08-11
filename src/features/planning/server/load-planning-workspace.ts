@@ -14,10 +14,16 @@ const UUID_PATTERN =
 
 interface CycleRow {
   id: string;
+  brand_id: string;
   code: string;
   name: string;
   currency_code: string;
   target_purchase_amount: string;
+}
+
+interface PlanningSettingsRow {
+  safety_stock: number;
+  target_cover_months: number;
 }
 
 interface VersionRow {
@@ -79,7 +85,7 @@ export async function loadPlanningWorkspace(
   const supabase = await createServerSupabaseClient();
   let cycleQuery = supabase
     .from("planning_cycles")
-    .select("id, code, name, currency_code, target_purchase_amount")
+    .select("id, brand_id, code, name, currency_code, target_purchase_amount")
     .eq("is_active", true);
 
   cycleQuery = UUID_PATTERN.test(cycleIdOrCode)
@@ -141,7 +147,13 @@ export async function loadPlanningWorkspace(
       : Promise.resolve({ data: [], error: null }),
   ]);
 
-  if (demandResult.error || batchResult.error || projectionResult.error) {
+  const { data: settingsData, error: settingsError } = await supabase
+    .from("planning_settings")
+    .select("safety_stock, target_cover_months")
+    .eq("brand_id", cycle.brand_id)
+    .maybeSingle();
+
+  if (demandResult.error || batchResult.error || projectionResult.error || settingsError) {
     return null;
   }
 
@@ -159,6 +171,7 @@ export async function loadPlanningWorkspace(
   const demands = (demandResult.data ?? []) as DemandRow[];
   const purchaseLines = (purchaseResult.data ?? []) as PurchaseLineRow[];
   const projections = (projectionResult.data ?? []) as ProjectionRow[];
+  const settings = settingsData as PlanningSettingsRow | null;
   const plannedBatchIds = new Set(
     batches.filter((batch) => batch.status === "planned").map((batch) => batch.id),
   );
@@ -192,7 +205,19 @@ export async function loadPlanningWorkspace(
       sku: line.products?.canonical_sku ?? line.product_id,
       productName: line.products?.name ?? "Sản phẩm chưa đặt tên",
       openingStock: line.opening_stock,
-      targetStock: line.target_stock,
+      targetStock: line.target_stock > 0
+        ? line.target_stock
+        : (settings?.safety_stock ?? 0)
+          + Math.ceil(
+            (settings?.target_cover_months ?? 0)
+              * demands
+                .filter((demand) => demand.plan_line_id === line.id)
+                .reduce((total, demand) => total + demand.demand_qty, 0)
+              / Math.max(
+                1,
+                demands.filter((demand) => demand.plan_line_id === line.id).length,
+              ),
+          ),
       annualDemand: demands
         .filter((demand) => demand.plan_line_id === line.id)
         .reduce((total, demand) => total + demand.demand_qty, 0),

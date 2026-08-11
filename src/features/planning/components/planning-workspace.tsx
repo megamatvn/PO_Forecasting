@@ -6,6 +6,7 @@ import { KpiStrip } from "@/features/planning/components/kpi-strip";
 import { PlanningGrid } from "@/features/planning/components/planning-grid";
 import { PlanningHeader } from "@/features/planning/components/planning-header";
 import { PlanningInsights } from "@/features/planning/components/planning-insights";
+import { PlanningTabs } from "@/features/planning/components/planning-tabs";
 import { StockAlert } from "@/features/planning/components/stock-alert";
 import { calculateAmount } from "@/lib/domain/money";
 import {
@@ -194,6 +195,7 @@ export function PlanningWorkspace({
         saveLabel={saveLabels[autosave.status]}
         viewerCount={viewerCount}
       />
+      <PlanningTabs cycleId={plan.cycle.id} versionId={plan.version.id} />
       <KpiStrip plan={plan} />
       <div className="planning-approval-toolbar">
         <div>

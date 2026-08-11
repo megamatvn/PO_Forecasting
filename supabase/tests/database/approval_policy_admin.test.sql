@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(7);
+select plan(8);
 
 select has_column(
   'public',
@@ -69,7 +69,7 @@ select is(
 );
 
 insert into public.planning_cycles (
-  id, brand_id, code, name, planning_year, currency_code
+  id, brand_id, code, name, planning_year, currency_code, target_purchase_amount
 )
 values (
   '40000000-0000-0000-0000-000000000082',
@@ -77,7 +77,8 @@ values (
   'ETX-2082-POLICY-ADMIN-TEST',
   'ETX policy admin test',
   2082,
-  'EUR'
+  'EUR',
+  1
 );
 
 insert into public.plan_versions (
@@ -94,6 +95,12 @@ values
     '41000000-0000-0000-0000-000000000083',
     '40000000-0000-0000-0000-000000000082',
     2,
+    'draft'
+  ),
+  (
+    '41000000-0000-0000-0000-000000000084',
+    '40000000-0000-0000-0000-000000000082',
+    3,
     'draft'
   );
 
@@ -133,6 +140,46 @@ select results_eq(
     )
   $$,
   'a configured exception escalates and the request snapshots filtered flags'
+);
+
+insert into public.purchase_batches (
+  id, plan_version_id, batch_number, name, order_date, eta_date, status
+)
+values (
+  '43000000-0000-0000-0000-000000000082',
+  '41000000-0000-0000-0000-000000000084',
+  1,
+  'Budget exception',
+  '2082-01-01',
+  '2082-02-01',
+  'planned'
+);
+
+insert into public.purchase_lines (
+  purchase_batch_id, product_id, qty, foc_qty, ex_price
+)
+values (
+  '43000000-0000-0000-0000-000000000082',
+  '20000000-0000-0000-0000-000000000150',
+  1,
+  0,
+  12.5
+);
+
+select public.submit_plan(
+  '41000000-0000-0000-0000-000000000084',
+  '83000000-0000-0000-0000-000000000084',
+  '{}'::jsonb
+);
+
+select results_eq(
+  $$
+    select required_levels, routing_reason, exception_flags
+    from public.approval_requests
+    where plan_version_id = '41000000-0000-0000-0000-000000000084'
+  $$,
+  $$ values (2::smallint, 'exception'::text, '{"budgetOverrun": true}'::jsonb) $$,
+  'server-derived budget overrun always escalates even when the policy does not list the flag'
 );
 
 select * from finish();

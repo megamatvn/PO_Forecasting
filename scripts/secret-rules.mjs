@@ -34,6 +34,10 @@ const rules = [
     ),
   },
   {
+    label: "Supabase secret key token",
+    pattern: /sb_secret_[A-Za-z0-9_-]{20,}/i,
+  },
+  {
     label: "private key material",
     pattern: new RegExp("-----BEGIN " + "(?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
   },

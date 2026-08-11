@@ -64,4 +64,30 @@ describe("validateImport", () => {
       expect.objectContaining({ severity: "error", code: "duplicate_row" }),
     );
   });
+
+  it("blocks malformed monthly demand and receipt values", () => {
+    const result = validateImport(
+      [
+        {
+          ...baseRow,
+          monthlyDemand: [{ demandMonth: "2026-01-01", demandQty: 0, invalid: true }],
+          purchaseReceipts: [{
+            sourceReference: "NK-1",
+            supplierCode: "COOPER",
+            supplierName: "COOPER France",
+            orderDate: null,
+            etaDate: null,
+            qty: 0,
+            focQty: 0,
+            status: "confirmed",
+            invalid: true,
+          }],
+        },
+      ],
+      new Set(["ET-015025"]),
+    );
+
+    expect(result.canCommit).toBe(false);
+    expect(result.issues.filter((item) => item.code === "invalid_number")).toHaveLength(2);
+  });
 });

@@ -47,6 +47,24 @@ test("ET-015150 đi qua Auth, import, PO và duyệt hai cấp trên Supabase", 
     await page.getByRole("button", { name: "Phê duyệt" }).click();
     await page.getByRole("button", { name: "Xác nhận phê duyệt" }).click();
     await expect(page.getByText("Đã duyệt", { exact: true })).toBeVisible();
+
+    await login(page, "planner@local.test");
+    await page.goto(`/versions/${cycle.versionId}`);
+    await expect(page.getByText("Bản ghi bất biến")).toBeVisible();
+    await page.getByRole("button", { name: "Tạo revision để chỉnh sửa" }).click();
+    await expect(page).toHaveURL(
+      new RegExp(`/planning/${cycle.cycleId}\\?versionId=[0-9a-f-]+`),
+    );
+    await expect(page.getByText("Draft", { exact: true })).toBeVisible();
+    const revisionUrl = new URL(page.url());
+    const revisionId = revisionUrl.searchParams.get("versionId");
+    expect(revisionId).toBeTruthy();
+
+    const qty = page.getByRole("spinbutton", { name: "Qty ET-015150" });
+    await qty.fill("2000");
+    await expect(page.getByText("Đã lưu", { exact: true })).toBeVisible();
+    await page.goto(`/versions/${revisionId}`);
+    await expect(page.getByText(/1 thay đổi/)).toBeVisible();
   } finally {
     await unlink(workbookPath).catch(() => undefined);
   }

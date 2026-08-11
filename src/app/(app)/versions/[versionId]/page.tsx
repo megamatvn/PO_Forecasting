@@ -1,4 +1,7 @@
 import { notFound } from "next/navigation";
+import { canPerform } from "@/features/auth/permissions";
+import { getCurrentAccess } from "@/features/auth/server/get-current-access";
+import { CreateRevisionButton } from "@/features/versions/components/create-revision-button";
 import { VersionDiff } from "@/features/versions/components/version-diff";
 import type { PlanDiff } from "@/features/versions/domain/diff-plan";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -18,7 +21,11 @@ interface VersionRow {
 
 export default async function VersionPage({ params }: VersionPageProps) {
   const { versionId } = await params;
-  const supabase = await createServerSupabaseClient();
+  const [supabase, access] = await Promise.all([
+    createServerSupabaseClient(),
+    getCurrentAccess(),
+  ]);
+  if (!access) notFound();
   const { data, error } = await supabase
     .from("plan_versions")
     .select(
@@ -62,7 +69,19 @@ export default async function VersionPage({ params }: VersionPageProps) {
             {cycleResult.data?.name ?? "Kế hoạch mua hàng"} · Trạng thái {version.status}
           </p>
         </div>
-        <span className="status-badge status-badge--neutral">Bản ghi bất biến</span>
+        <div className="version-page__actions">
+          <span className="status-badge status-badge--neutral">Bản ghi bất biến</span>
+          {version.status === "approved" || version.status === "changes_requested"
+            ? canPerform(new Set(access.roles), "edit_plan")
+              ? (
+                <CreateRevisionButton
+                  planVersionId={version.id}
+                  cycleId={version.planning_cycle_id}
+                />
+              )
+              : null
+            : null}
+        </div>
       </header>
       <VersionDiff
         fromLabel={

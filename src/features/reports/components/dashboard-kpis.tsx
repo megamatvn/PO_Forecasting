@@ -20,7 +20,7 @@ export function DashboardKpis({ currencyCode, kpis }: DashboardKpisProps) {
   ];
 
   return (
-    <section className="dashboard-kpis" aria-label="Chỉ số điều hành">
+    <section id="cash-summary" className="dashboard-kpis" aria-label="Chỉ số điều hành và Cash Summary">
       {items.map((item) => (
         <article key={item.label} className={`dashboard-kpi dashboard-kpi--${item.tone}`}>
           <span>{item.label}</span>

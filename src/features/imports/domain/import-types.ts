@@ -5,6 +5,24 @@ export interface RawPurchaseWave {
   importedAmount: string | null;
 }
 
+export interface RawMonthlyDemand {
+  demandMonth: string;
+  demandQty: number;
+  invalid?: boolean;
+}
+
+export interface RawPurchaseReceipt {
+  sourceReference: string;
+  supplierCode: string | null;
+  supplierName: string | null;
+  orderDate: string | null;
+  etaDate: string | null;
+  qty: number;
+  focQty: number;
+  status: "confirmed" | "received";
+  invalid?: boolean;
+}
+
 export interface RawForecastRow {
   rowNumber: number;
   rawSku: string;
@@ -14,6 +32,8 @@ export interface RawForecastRow {
   annualPlannedQty?: number;
   annualImportedAmount?: string | null;
   purchaseWaves: RawPurchaseWave[];
+  monthlyDemand?: RawMonthlyDemand[];
+  purchaseReceipts?: RawPurchaseReceipt[];
 }
 
 export interface NormalizedImportRow extends RawForecastRow {

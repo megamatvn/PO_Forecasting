@@ -5,13 +5,19 @@ import { loadPlanningWorkspace } from "@/features/planning/server/load-planning-
 
 interface PlanningPageProps {
   params: Promise<{ cycleId: string }>;
+  searchParams: Promise<{ versionId?: string | string[] }>;
 }
 
-export default async function PlanningPage({ params }: PlanningPageProps) {
-  const [{ cycleId }, access] = await Promise.all([params, getCurrentAccess()]);
+export default async function PlanningPage({ params, searchParams }: PlanningPageProps) {
+  const [{ cycleId }, query, access] = await Promise.all([
+    params,
+    searchParams,
+    getCurrentAccess(),
+  ]);
   if (!access) notFound();
 
-  const plan = await loadPlanningWorkspace(cycleId, access);
+  const versionId = Array.isArray(query.versionId) ? query.versionId[0] : query.versionId;
+  const plan = await loadPlanningWorkspace(cycleId, access, versionId);
   if (!plan) notFound();
 
   return (

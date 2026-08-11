@@ -32,7 +32,7 @@ describe("exportPlanWorkbook", () => {
           qty: 2368,
           focQty: 0,
           exPrice: "12.50",
-          amount: "1.00",
+          amount: "29600.00",
           projectedStock: 0,
           recommendedQty: 0,
           severity: "healthy",
@@ -46,7 +46,7 @@ describe("exportPlanWorkbook", () => {
     const metadata = workbook.getWorksheet("Metadata");
 
     expect(forecast?.getCell("A2").value).toBe("ET-015150");
-    expect(forecast?.getCell("H2").value).toBe(2368 * 12.5);
+    expect(forecast?.getCell("H2").value).toBe(29600);
     expect(metadata?.getCell("B2").value).toBe("ETX-2026");
     expect(metadata?.getCell("B4").value).toBe("approved");
   });

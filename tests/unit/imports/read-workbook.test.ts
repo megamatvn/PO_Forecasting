@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
+import { createForecastWorkbookFixture } from "../../fixtures/forecast-workbook";
 import {
   assertImportFile,
   readForecastWorkbook,
@@ -13,6 +14,33 @@ const fixturePath = path.resolve(
 );
 
 describe("readForecastWorkbook", () => {
+  it("imports only the canonical Forecast 5M block and captures 2026 demand/receipts", async () => {
+    const rows = await readForecastWorkbook(await createForecastWorkbookFixture());
+
+    expect(rows).toHaveLength(13);
+    expect(rows.find((row) => row.rawSku === "ET-015150")?.monthlyDemand).toHaveLength(12);
+    expect(rows.find((row) => row.rawSku === "ET-015150")?.monthlyDemand?.[0]).toEqual({
+      demandMonth: "2026-01-01",
+      demandQty: 227,
+    });
+    expect(rows.find((row) => row.rawSku === "ET-015150")?.purchaseReceipts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ qty: 1002, status: "received" }),
+      ]),
+    );
+  });
+
+  it("marks malformed demand cells instead of silently converting them to zero", async () => {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(Uint8Array.from(await createForecastWorkbookFixture()).buffer);
+    workbook.getWorksheet("Sales")!.getCell("E58").value = "not-a-number";
+
+    const rows = await readForecastWorkbook(Buffer.from(await workbook.xlsx.writeBuffer()));
+    const demand = rows.find((row) => row.rawSku === "ET-015150")?.monthlyDemand?.[0];
+
+    expect(demand).toMatchObject({ demandQty: 0, invalid: true });
+  });
+
   it("reads SKU, Ex Price and current stock from the Forecast 5M layout", async () => {
     const rows = await readForecastWorkbook(await readFile(fixturePath));
 

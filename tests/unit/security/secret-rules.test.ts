@@ -11,6 +11,8 @@ describe("secret scanner rules", () => {
     ["database URL", "DATABASE_URL=" + postgresScheme + "user:pass@db.example.test:5432/postgres"],
     ["alternate service secret", "INTERNAL_SERVICE_ROLE_TOKEN=" + jwtPrefix + "a".repeat(32)],
     ["new Supabase secret key", "SUPABASE_SERVICE_ROLE_KEY=sb_" + "secret_" + "a".repeat(32)],
+    ["bare Supabase secret key", "sb_" + "secret_" + "a".repeat(32)],
+    ["JSON Supabase secret key", JSON.stringify({ key: "sb_" + "secret_" + "a".repeat(32) })],
   ])("detects %s", (_label, source) => {
     expect(findSecret(source)).not.toBeNull();
   });

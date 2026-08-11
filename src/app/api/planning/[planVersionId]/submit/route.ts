@@ -79,6 +79,14 @@ export async function POST(request: Request, context: RouteContext) {
   });
   if (!error && requestId) return NextResponse.json({ requestId });
 
+  if (error?.message.includes("missing_ex_price")) {
+    return errorResponse(
+      422,
+      "missing_ex_price",
+      "Không thể gửi duyệt vì kế hoạch còn Qty chưa có Ex Price.",
+    );
+  }
+
   return errorResponse(
     error?.message.includes("forbidden") ? 403 : 422,
     "submission_failed",

@@ -45,6 +45,34 @@ export function validateImport(
       );
     }
 
+    for (const demand of row.monthlyDemand ?? []) {
+      if (demand.invalid || demand.demandQty < 0) {
+        issues.push(
+          issue({
+            severity: "error",
+            rowNumber: row.rowNumber,
+            field: `monthlyDemand.${demand.demandMonth}.demandQty`,
+            code: "invalid_number",
+            message: "Forecast theo tháng phải là số không âm.",
+          }),
+        );
+      }
+    }
+
+    for (const receipt of row.purchaseReceipts ?? []) {
+      if (receipt.invalid || receipt.qty < 0 || receipt.focQty < 0) {
+        issues.push(
+          issue({
+            severity: "error",
+            rowNumber: row.rowNumber,
+            field: `purchaseReceipts.${receipt.sourceReference}.qty`,
+            code: "invalid_number",
+            message: "Số lượng hàng mua/FOC và ngày nhận phải hợp lệ.",
+          }),
+        );
+      }
+    }
+
     const firstRow = firstRowByCanonicalSku.get(row.canonicalSku);
     if (firstRow !== undefined) {
       issues.push(

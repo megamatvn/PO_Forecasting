@@ -787,6 +787,34 @@ h3 {
   font-size: 0.7rem;
 }
 
+.planning-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 20px 0 18px;
+  padding: 4px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.planning-tabs a {
+  flex: 0 0 auto;
+  padding: 9px 14px;
+  border-radius: 10px;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.planning-tabs a:hover,
+.planning-tabs a[aria-selected="true"] {
+  background: var(--ink);
+  color: white;
+}
+
 .status-badge--draft {
   color: var(--warning);
 }

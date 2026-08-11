@@ -1,6 +1,5 @@
 import ExcelJS from "exceljs";
 import type { PlanningWorkspaceView } from "@/features/planning/planning-types";
-import { calculateAmount } from "@/lib/domain/money";
 
 const headerFill = "173F35";
 const accentFill = "DDF3EA";
@@ -41,7 +40,11 @@ export async function exportPlanWorkbook(
       qty: row.qty,
       focQty: row.focQty,
       exPrice: Number(row.exPrice),
-      amount: Number(calculateAmount({ qty: row.qty, exPrice: row.exPrice })),
+      // `amount` is the server-loaded aggregate of canonical purchase_lines
+      // (whose database generated column enforces Qty × Ex Price). For an
+      // Approved version, `qty` is only the editable planned wave and can be
+      // zero even when confirmed/received purchase lines have an amount.
+      amount: Number(row.amount),
       projectedStock: row.projectedStock,
       recommendedQty: row.recommendedQty,
       severity: row.severity,

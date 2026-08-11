@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(23);
+select plan(30);
 
 select has_table('public', 'audit_events', 'append-only audit events exist');
 select has_table('public', 'version_diffs', 'persisted version diffs exist');
@@ -18,6 +18,12 @@ select has_function(
   'save_draft_changes',
   array['uuid', 'integer', 'jsonb', 'uuid'],
   'compare-and-swap Draft save RPC exists'
+);
+select has_column(
+  'public',
+  'approval_requests',
+  'submit_request',
+  'Submit idempotency stores a canonical request payload'
 );
 
 insert into public.planning_cycles (
@@ -206,6 +212,21 @@ select is(
 );
 
 select is(
+  (
+    select diff_data
+    from public.version_diffs
+    where from_version_id = '41000000-0000-0000-0000-000000000080'
+      and to_version_id = (
+        select id
+        from public.plan_versions
+        where parent_version_id = '41000000-0000-0000-0000-000000000080'
+      )
+  ),
+  '[]'::jsonb,
+  'a copied revision starts with an empty persisted diff'
+);
+
+select is(
   public.save_draft_changes(
     (
       select id
@@ -265,6 +286,22 @@ select results_eq(
   $$,
   $$ values (1, 33, 2368, 6417.28::numeric) $$,
   'CAS save applies canonical changes and recalculates Amount from Qty × Ex Price'
+);
+
+select is(
+  (
+    select count(*)
+    from public.version_diffs,
+         jsonb_array_elements(version_diffs.diff_data) as diff
+    where version_diffs.to_version_id = (
+      select id
+      from public.plan_versions
+      where parent_version_id = '41000000-0000-0000-0000-000000000080'
+    )
+      and diff ->> 'path' like 'planLines.%openingStock'
+  ),
+  1::bigint,
+  'Draft edits refresh the persisted version diff'
 );
 
 select throws_ok(
@@ -379,6 +416,73 @@ select is(
   1::bigint,
   'retrying Submit creates one approval request'
 );
+
+select is(
+  (
+    select submit_request
+    from public.approval_requests
+    join public.plan_versions on plan_versions.id = approval_requests.plan_version_id
+    where plan_versions.parent_version_id = '41000000-0000-0000-0000-000000000080'
+  ),
+  jsonb_build_object(
+    'planVersionId',
+    (
+      select id
+      from public.plan_versions
+      where parent_version_id = '41000000-0000-0000-0000-000000000080'
+    ),
+    'exceptionFlags', '{}'::jsonb
+  ),
+  'Submit stores the canonical version and exception payload'
+);
+
+select throws_ok(
+  $$
+    select public.submit_plan(
+      '41000000-0000-0000-0000-000000000080'::uuid,
+      '82000000-0000-0000-0000-000000000080'::uuid,
+      '{"criticalShortage": true}'::jsonb
+    )
+  $$,
+  'P0001',
+  'idempotency_key_reused',
+  'reusing Submit key with a different payload is rejected'
+);
+
+select throws_ok(
+  $$
+    select public.submit_plan(
+      '41000000-0000-0000-0000-000000000080'::uuid,
+      '82000000-0000-0000-0000-000000000080'::uuid,
+      '{}'::jsonb
+    )
+  $$,
+  'P0001',
+  'idempotency_key_reused',
+  'reusing Submit key for a different plan version is rejected'
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claim.sub',
+  '90000000-0000-0000-0000-000000000005',
+  true
+);
+
+select throws_ok(
+  $$
+    select public.submit_plan(
+      '41000000-0000-0000-0000-000000000080'::uuid,
+      '82000000-0000-0000-0000-000000000080'::uuid,
+      '{}'::jsonb
+    )
+  $$,
+  '42501',
+  'plan_submit_forbidden',
+  'an unauthorized viewer cannot replay another users Submit key'
+);
+reset role;
+reset request.jwt.claim.sub;
 
 select public.approve_step(
   (
