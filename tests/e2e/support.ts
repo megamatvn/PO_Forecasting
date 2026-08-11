@@ -19,8 +19,18 @@ export async function login(page: Page, email: string) {
   await page.reload();
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Mật khẩu").fill(localPassword);
+  const tokenResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/auth/v1/token") &&
+    response.request().method() === "POST"
+  );
   await page.getByRole("button", { name: "Đăng nhập" }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
+  const tokenResponse = await tokenResponsePromise;
+  if (!tokenResponse.ok()) {
+    throw new Error(
+      `Local Supabase Auth failed (${tokenResponse.status()}): ${await tokenResponse.text()}`,
+    );
+  }
+  await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
 }
 
 export async function resetCycle(page: Page): Promise<E2ECycle> {

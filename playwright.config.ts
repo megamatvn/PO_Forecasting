@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.E2E_DATABASE_MODE === "local" ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:3100",
+    baseURL: "http://127.0.0.1:3100",
     trace: "on-first-retry",
   },
   projects: [
@@ -19,7 +19,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "pnpm dev --port 3100",
-    url: "http://localhost:3100/login",
+    url: "http://127.0.0.1:3100/login",
     reuseExistingServer: false,
     env: {
       E2E_MODE: "true",

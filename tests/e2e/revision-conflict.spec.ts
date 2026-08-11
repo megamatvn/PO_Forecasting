@@ -6,8 +6,8 @@ test("hai phiên Planner thật tạo CAS conflict và giữ bản local", async
   await login(page, "admin@local.test");
   const cycle = await resetCycle(page);
 
-  const contextA = await browser.newContext({ baseURL: "http://localhost:3100" });
-  const contextB = await browser.newContext({ baseURL: "http://localhost:3100" });
+  const contextA = await browser.newContext({ baseURL: "http://127.0.0.1:3100" });
+  const contextB = await browser.newContext({ baseURL: "http://127.0.0.1:3100" });
   const pageA = await contextA.newPage();
   const pageB = await contextB.newPage();
 
