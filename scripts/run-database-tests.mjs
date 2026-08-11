@@ -23,7 +23,10 @@ const sql = postgres(connectionString, {
 });
 
 function collectTapLines(value, lines = []) {
-  if (typeof value === "string" && /^(?:not )?ok\b/.test(value)) {
+  if (
+    typeof value === "string" &&
+    /^(?:(?:not )?ok\b|# Looks like|Bail out!)/.test(value)
+  ) {
     lines.push(value);
     return lines;
   }
@@ -54,7 +57,10 @@ try {
 
     for (const line of tapLines) {
       console.log(`${file}: ${line}`);
-      hasFailure ||= line.startsWith("not ok");
+      hasFailure ||=
+        line.startsWith("not ok") ||
+        line.startsWith("# Looks like") ||
+        line.startsWith("Bail out!");
     }
 
     if (tapLines.length === 0) {

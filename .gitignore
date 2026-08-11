@@ -21,6 +21,7 @@ scratch/
 *.xlsx
 *.xls
 *.xlsm
+!tests/fixtures/*.xlsx
 
 # Supabase local state
 supabase/.temp/
