@@ -85,8 +85,9 @@ select is(
 insert into auth.users (id)
 values ('90000000-0000-0000-0000-000000000099');
 
-insert into public.profiles (id, display_name)
-values ('90000000-0000-0000-0000-000000000099', 'Storage policy test admin');
+update public.profiles
+set display_name = 'Storage policy test admin'
+where id = '90000000-0000-0000-0000-000000000099';
 
 insert into public.user_roles (user_id, role)
 values ('90000000-0000-0000-0000-000000000099', 'administrator');

@@ -15,6 +15,7 @@ interface BrandAccessRow {
 
 interface ProfileRow {
   display_name: string;
+  is_active: boolean;
 }
 
 export async function getCurrentAccess(): Promise<CurrentAccess | null> {
@@ -30,7 +31,7 @@ export async function getCurrentAccess(): Promise<CurrentAccess | null> {
   const [profileResult, rolesResult, accessResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, is_active")
       .eq("id", user.id)
       .maybeSingle(),
     supabase.from("user_roles").select("role").eq("user_id", user.id),
@@ -54,10 +55,11 @@ export async function getCurrentAccess(): Promise<CurrentAccess | null> {
 
   const brands = (brandsResult.data ?? []) as BrandAccess[];
   const profile = profileResult.data as ProfileRow | null;
+  if (!profile || !profile.is_active) return null;
 
   return {
     displayName:
-      profile?.display_name || user.email?.split("@")[0] || "Người dùng Sagen",
+      profile.display_name || user.email?.split("@")[0] || "Người dùng Sagen",
     roles: ((rolesResult.data ?? []) as RoleRow[]).map((row) => row.role),
     brands,
     activeBrandId: brands[0]?.id ?? null,

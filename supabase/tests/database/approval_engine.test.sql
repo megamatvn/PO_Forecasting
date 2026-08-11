@@ -237,8 +237,9 @@ select is(
 
 insert into auth.users (id)
 values ('90000000-0000-0000-0000-000000000097');
-insert into public.profiles (id, display_name)
-values ('90000000-0000-0000-0000-000000000097', 'Planner cannot approve');
+update public.profiles
+set display_name = 'Planner cannot approve'
+where id = '90000000-0000-0000-0000-000000000097';
 insert into public.user_roles (user_id, role)
 values ('90000000-0000-0000-0000-000000000097', 'planner');
 insert into public.user_brand_access (user_id, brand_id)

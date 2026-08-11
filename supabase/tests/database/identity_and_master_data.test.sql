@@ -32,7 +32,7 @@ select is(
 set local role authenticated;
 select set_config(
   'request.jwt.claim.sub',
-  '90000000-0000-0000-0000-000000000001',
+  '90000000-0000-0000-0000-000000000091',
   true
 );
 select is(

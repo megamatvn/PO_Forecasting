@@ -107,9 +107,10 @@ export async function loadApprovalInbox(
     );
     const requestDiffs = diffs.get(request.plan_version_id) ?? [];
     const canDecide =
-      (request.current_level === 1 && roleSet.has("approver_l1")) ||
-      (request.current_level === 2 && roleSet.has("approver_l2")) ||
-      roleSet.has("administrator");
+      (request.status === "pending_l1" && roleSet.has("approver_l1")) ||
+      (request.status === "pending_l2" && roleSet.has("approver_l2")) ||
+      ((request.status === "pending_l1" || request.status === "pending_l2") &&
+        roleSet.has("administrator"));
 
     return [
       {

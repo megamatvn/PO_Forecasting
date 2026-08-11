@@ -12,8 +12,13 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:db:local": "supabase test db",
     "test:db:remote": "node --env-file-if-exists=.env.local scripts/run-database-tests.mjs",
     "e2e": "playwright test",
+    "e2e:local": "E2E_DATABASE_MODE=local playwright test --project=chromium",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "verify:production-harness": "node scripts/verify-production-harness.mjs",
+    "check": "pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm test:db:local && pnpm build && pnpm check:secrets && pnpm verify:production-harness && pnpm e2e:local",
     "supabase": "supabase"
   },
   "dependencies": {
