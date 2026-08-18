@@ -8,6 +8,7 @@ export interface RawPurchaseWave {
 export interface RawMonthlyDemand {
   demandMonth: string;
   demandQty: number;
+  roundedFrom?: number;
   invalid?: boolean;
 }
 
@@ -45,7 +46,8 @@ export type ImportIssueCode =
   | "unknown_sku"
   | "invalid_number"
   | "duplicate_row"
-  | "formula_mismatch";
+  | "formula_mismatch"
+  | "fractional_quantity_rounded";
 
 export interface ImportIssue {
   severity: "error" | "warning";
@@ -60,7 +62,30 @@ export interface ImportValidationResult {
   canCommit: boolean;
 }
 
+export interface ForecastSheetCandidate {
+  sheetName: string;
+  headerRow: number;
+  score: number;
+  missingHeaders: string[];
+}
+
+export interface ForecastWorkbookReadResult {
+  rows: RawForecastRow[];
+  sourceSheetName: string;
+}
+
+export interface BuildImportPreviewInput {
+  buffer: Buffer | Uint8Array;
+  fileName: string;
+  sourceSheetName?: string;
+  aliases: ReadonlyMap<string, string>;
+  knownCanonicalSkus: ReadonlySet<string>;
+}
+
 export interface ImportPreview extends ImportValidationResult {
   checksum: string;
+  sourceSheetName: string;
+  /** Year inferred from the workbook's actual demand headers, when available. */
+  planningYear?: number;
   rows: NormalizedImportRow[];
 }

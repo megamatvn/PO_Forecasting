@@ -27,6 +27,6 @@ describe("VersionDiff", () => {
 
     expect(screen.getByText("ET-015150 · Qty")).toBeVisible();
     expect(screen.getByText("0 → 2.368")).toBeVisible();
-    expect(screen.getByText("ET-015150 · Ex Price")).toBeVisible();
+    expect(screen.getByText("ET-015150 · Đơn giá xuất xưởng")).toBeVisible();
   });
 });

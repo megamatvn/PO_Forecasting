@@ -2,10 +2,15 @@ import type { PlanStatus } from "@/lib/domain/types";
 
 export type PlanningSeverity = "healthy" | "warning" | "critical";
 
+export interface PlanningBrandView {
+  code: string;
+}
+
 export interface PlanningCycleView {
   id: string;
   code: string;
   name: string;
+  planningYear: number;
   currencyCode: string;
   targetPurchaseAmount: string;
 }
@@ -36,6 +41,7 @@ export interface PlanningRowView {
 }
 
 export interface PlanningWorkspaceView {
+  brand: PlanningBrandView;
   cycle: PlanningCycleView;
   version: PlanningVersionView;
   canEdit: boolean;

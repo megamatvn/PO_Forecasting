@@ -19,8 +19,8 @@ function businessPath(path: string) {
   if (parts[0] === "purchaseLines" && parts.length >= 3) {
     const fieldLabels: Record<string, string> = {
       qty: "Qty",
-      focQty: "FOC",
-      exPrice: "Ex Price",
+      focQty: "Hàng tặng (FOC)",
+      exPrice: "Đơn giá xuất xưởng",
       amount: "Amount",
     };
     return `${parts[1]} · ${fieldLabels[parts[2]] ?? parts[2]}`;

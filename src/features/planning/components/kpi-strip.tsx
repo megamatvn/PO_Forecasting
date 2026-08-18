@@ -24,8 +24,8 @@ export function KpiStrip({ plan }: KpiStripProps) {
   const metrics = [
     { label: "Ngân sách mục tiêu", value: money(target, plan.cycle.currencyCode) },
     { label: "Đã lên PO", value: money(committed, plan.cycle.currencyCode) },
-    { label: "Khoảng trống", value: money(target - committed, plan.cycle.currencyCode) },
-    { label: "Critical", value: criticalCount.toLocaleString("vi-VN") },
+    { label: "Ngân sách còn lại", value: money(target - committed, plan.cycle.currencyCode) },
+    { label: "Cần xử lý khẩn cấp", value: criticalCount.toLocaleString("vi-VN") },
     { label: "SKU có PO", value: poCount.toLocaleString("vi-VN") },
   ];
 

@@ -23,14 +23,18 @@ test("ET-015150 đi qua Auth, import, PO và duyệt hai cấp trên Supabase", 
     await page.getByLabel("Chọn file Excel").setInputFiles(workbookPath);
     await expect(page.getByText("ET-015027 → ET-015025")).toBeVisible();
     await page.getByRole("checkbox", { name: /Tôi đã kiểm tra các cảnh báo/ }).check();
-    await page.getByRole("button", { name: "Xác nhận import" }).click();
-    await expect(page.getByText("Import hoàn tất")).toBeVisible();
+    await page.getByRole("button", { name: "Xác nhận nhập dữ liệu" }).click();
+    await expect(page.getByText("Nhập dữ liệu hoàn tất")).toBeVisible();
 
     await login(page, "planner@local.test");
-    await page.goto(`/planning/${cycle.cycleId}`);
+    await page.goto(`/planning/${cycle.cycleId}?step=products`);
     await expect(page.getByText(/ET-015150 dự kiến thiếu 2\.368/)).toBeVisible();
     await page.getByRole("button", { name: "Tạo PO đề xuất 2.368" }).click();
     await expect(page.getByText("Đã lưu", { exact: true })).toBeVisible();
+    await page.getByRole("link", { name: "Ngân sách" }).click();
+    await expect(page.getByRole("heading", { name: "Ngân sách" })).toBeVisible();
+    await page.getByRole("link", { name: "Gửi duyệt" }).click();
+    await expect(page.getByRole("heading", { name: "Gửi duyệt kế hoạch" })).toBeVisible();
     await page.getByRole("button", { name: "Kiểm tra & gửi duyệt" }).click();
     await expect(page.getByText("Kế hoạch sẽ được duyệt 2 cấp")).toBeVisible();
     await page.getByRole("button", { name: "Gửi duyệt 2 cấp" }).click();
@@ -60,7 +64,7 @@ test("ET-015150 đi qua Auth, import, PO và duyệt hai cấp trên Supabase", 
     const revisionId = revisionUrl.searchParams.get("versionId");
     expect(revisionId).toBeTruthy();
 
-    const qty = page.getByRole("spinbutton", { name: "Qty ET-015150" });
+    const qty = page.getByLabel("Số lượng đặt");
     await qty.fill("2000");
     await expect(page.getByText("Đã lưu", { exact: true })).toBeVisible();
     await page.goto(`/versions/${revisionId}`);

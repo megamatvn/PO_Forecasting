@@ -23,19 +23,19 @@ function mapCommitError(message: string) {
     return errorResponse(
       409,
       "warnings_require_confirmation",
-      "Bạn cần xác nhận các cảnh báo trước khi hoàn tất import.",
+      "Bạn cần xác nhận các cảnh báo trước khi hoàn tất nhập dữ liệu.",
     );
   }
 
   if (message.includes("import_batch_not_found")) {
-    return errorResponse(404, "batch_not_found", "Không tìm thấy đợt import.");
+    return errorResponse(404, "batch_not_found", "Không tìm thấy đợt nhập dữ liệu.");
   }
 
   if (message.includes("import_batch_forbidden")) {
     return errorResponse(
       403,
       "forbidden",
-      "Bạn không có quyền hoàn tất đợt import này.",
+      "Bạn không có quyền hoàn tất đợt nhập dữ liệu này.",
     );
   }
 
@@ -43,7 +43,7 @@ function mapCommitError(message: string) {
     return errorResponse(
       409,
       "already_committed",
-      "Đợt import đã được hoàn tất bằng một yêu cầu khác.",
+      "Đợt nhập dữ liệu đã được hoàn tất bằng một yêu cầu khác.",
     );
   }
 
@@ -55,14 +55,14 @@ function mapCommitError(message: string) {
     return errorResponse(
       422,
       "batch_not_committable",
-      "Đợt import chưa đủ điều kiện để hoàn tất.",
+      "Đợt nhập dữ liệu chưa đủ điều kiện để hoàn tất.",
     );
   }
 
   return errorResponse(
     500,
     "commit_failed",
-    "Không thể hoàn tất import. Vui lòng thử lại.",
+    "Không thể hoàn tất nhập dữ liệu. Vui lòng thử lại.",
   );
 }
 
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     return errorResponse(
       400,
       "invalid_request",
-      "Thiếu mã đợt import hoặc khóa chống gửi trùng hợp lệ.",
+      "Thiếu mã đợt nhập dữ liệu hoặc khóa chống gửi trùng hợp lệ.",
     );
   }
 

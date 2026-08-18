@@ -12,7 +12,7 @@ export function ImportDropzone({
     <div className="import-dropzone">
       <div>
         <p className="section-index">01 · File nguồn</p>
-        <h2>Đưa Forecast 5M vào vùng kiểm tra</h2>
+        <h2>Chọn file kế hoạch để kiểm tra</h2>
         <p className="muted-copy">
           Hệ thống chỉ đọc file ở bước này. Dữ liệu chính chưa thay đổi cho đến
           khi bạn xác nhận import.

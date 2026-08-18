@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageHeader } from "@/components/ui/page-header";
 import { canPerform } from "@/features/auth/permissions";
 import { getCurrentAccess } from "@/features/auth/server/get-current-access";
 import { CreateRevisionButton } from "@/features/versions/components/create-revision-button";
@@ -18,6 +19,16 @@ interface VersionRow {
   status: string;
   created_at: string;
 }
+
+const statusLabels: Record<string, string> = {
+  draft: "Bản nháp",
+  submitted: "Đã gửi duyệt",
+  review_l1: "Chờ cấp 1",
+  review_l2: "Chờ cấp 2",
+  approved: "Đã duyệt",
+  changes_requested: "Yêu cầu sửa",
+  superseded: "Đã thay thế",
+};
 
 export default async function VersionPage({ params }: VersionPageProps) {
   const { versionId } = await params;
@@ -59,17 +70,11 @@ export default async function VersionPage({ params }: VersionPageProps) {
 
   return (
     <div className="page-shell version-page">
-      <header className="page-heading">
-        <div>
-          <p className="eyebrow">
-            {cycleResult.data?.code ?? "Planning"} · Version history
-          </p>
-          <h1>Version {version.version_number}</h1>
-          <p className="page-heading__copy">
-            {cycleResult.data?.name ?? "Kế hoạch mua hàng"} · Trạng thái {version.status}
-          </p>
-        </div>
-        <div className="version-page__actions">
+      <PageHeader
+        eyebrow={`${cycleResult.data?.code ?? "Kế hoạch"} · Lịch sử phiên bản`}
+        title={`Phiên bản ${version.version_number}`}
+        description={`${cycleResult.data?.name ?? "Kế hoạch mua hàng"} · Trạng thái ${statusLabels[version.status] ?? version.status}`}
+        actions={<div className="version-page__actions">
           <span className="status-badge status-badge--neutral">Bản ghi bất biến</span>
           {version.status === "approved" || version.status === "changes_requested"
             ? canPerform(new Set(access.roles), "edit_plan")
@@ -81,15 +86,15 @@ export default async function VersionPage({ params }: VersionPageProps) {
               )
               : null
             : null}
-        </div>
-      </header>
+        </div>}
+      />
       <VersionDiff
         fromLabel={
           parentResult.data
-            ? `Version ${parentResult.data.version_number}`
+            ? `Phiên bản ${parentResult.data.version_number}`
             : "Bản khởi tạo"
         }
-        toLabel={`Version ${version.version_number}`}
+        toLabel={`Phiên bản ${version.version_number}`}
         diffs={diffs}
       />
     </div>

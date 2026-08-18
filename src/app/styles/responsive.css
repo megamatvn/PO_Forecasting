@@ -1,0 +1,159 @@
+button,
+a,
+input,
+select,
+textarea {
+  outline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+}
+
+.planning-workspace > * {
+  min-width: 0;
+}
+
+/* Keep the master/detail surface usable before the sidebar collapses. */
+@media (max-width: 1100px) {
+  .planning-workspace__detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .annual-plans-launch { align-items: flex-start; flex-direction: column; }
+  .annual-plans-launch .button { width: 100%; }
+  .annual-plan-form-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .planning-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .planning-header__status {
+    justify-items: start;
+  }
+
+  .stock-alert__copy {
+    min-width: 0;
+  }
+
+  .stock-alert__copy h2 {
+    overflow-wrap: anywhere;
+  }
+
+  .page-shell {
+    padding-inline: 1rem;
+  }
+
+  .page-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .page-header h1 {
+    font-size: clamp(1.625rem, 8vw, 2rem);
+  }
+
+  .page-header__description {
+    -webkit-line-clamp: 2;
+  }
+
+  .page-header__aside {
+    align-items: stretch;
+    justify-items: stretch;
+  }
+
+  .page-header__actions,
+  .page-header__actions > * {
+    width: 100%;
+  }
+
+  .planning-product-editor__back {
+    width: 100%;
+    min-height: 2.75rem;
+  }
+
+  .approval-dialog {
+    padding: 1rem;
+  }
+
+  .approval-dialog__panel {
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    padding: 1.25rem;
+  }
+
+  .approval-dialog__actions {
+    flex-direction: column;
+  }
+
+  .approval-dialog__actions > .button {
+    width: 100%;
+  }
+
+  .metric-strip dl {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-strip dl > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .metric-strip dl > div:last-child {
+    border-bottom: 0;
+  }
+
+  .annual-plan-stepper ol { display: none; }
+  .annual-plan-stepper__mobile-label { display: block; margin: 0 0 0.35rem; color: var(--ink); font-weight: 800; }
+  .annual-plan-stepper__progress { display: block; height: 0.3rem; overflow: hidden; border-radius: 99rem; background: var(--surface-soft); }
+  .annual-plan-stepper__progress span { display: block; height: 100%; border-radius: inherit; background: var(--success); }
+  .annual-plan-wizard__footer { bottom: 0; border-radius: 0.8rem 0.8rem 0 0; padding: 0.65rem; }
+  .annual-plan-wizard__save-state { display: none; }
+  .annual-plan-wizard__footer .button { flex: 1; }
+
+  button,
+  input,
+  select,
+  textarea,
+  .button {
+    min-height: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .annual-lines-step__header { flex-direction: column; }
+  .annual-lines-step__actions { justify-content: flex-start; width: 100%; }
+  .annual-lines-step__actions .button { flex: 1; }
+  .annual-lines-table { min-width: 0; }
+  .annual-lines-table th:nth-child(2),
+  .annual-lines-table td:nth-child(2),
+  .annual-lines-table th:nth-child(5),
+  .annual-lines-table td:nth-child(5) { display: none; }
+  .annual-lines-table th:first-child,
+  .annual-lines-table td:first-child { min-width: 14rem; }
+  .annual-line-row__product { grid-template-columns: 1fr; gap: 0.35rem; }
+  .annual-lines-step__footer { align-items: stretch; flex-direction: column; }
+  .purchase-wave-step__header { align-items: stretch; flex-direction: column; }
+  .purchase-wave-step__header .button { width: 100%; }
+  .purchase-wave-editor__dates { grid-template-columns: 1fr; }
+  .purchase-wave-editor > header { align-items: flex-start; }
+  .purchase-wave-editor > header .button { min-height: 2.5rem; }
+  .allocation-matrix-wrap { padding-inline: 0.65rem; }
+  .allocation-matrix { min-width: 34rem; }
+  .purchase-wave-step__footer { align-items: stretch; flex-direction: column; }
+}

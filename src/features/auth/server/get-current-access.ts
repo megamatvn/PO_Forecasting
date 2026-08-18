@@ -1,6 +1,7 @@
-import type {
-  BrandAccess,
-  CurrentAccess,
+import {
+  resolveActiveBrandId,
+  type BrandAccess,
+  type CurrentAccess,
 } from "@/features/auth/access-types";
 import type { AppRole } from "@/features/auth/permissions";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -18,7 +19,9 @@ interface ProfileRow {
   is_active: boolean;
 }
 
-export async function getCurrentAccess(): Promise<CurrentAccess | null> {
+export async function getCurrentAccess(
+  requestedBrandId?: string,
+): Promise<CurrentAccess | null> {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -62,6 +65,6 @@ export async function getCurrentAccess(): Promise<CurrentAccess | null> {
       profile.display_name || user.email?.split("@")[0] || "Người dùng Sagen",
     roles: ((rolesResult.data ?? []) as RoleRow[]).map((row) => row.role),
     brands,
-    activeBrandId: brands[0]?.id ?? null,
+    activeBrandId: resolveActiveBrandId(brands, requestedBrandId),
   };
 }

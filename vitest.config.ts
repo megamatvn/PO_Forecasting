@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "server-only": fileURLToPath(new URL("./tests/server-only.ts", import.meta.url)),
     },
   },
   test: {
@@ -15,6 +16,7 @@ export default defineConfig({
       "tests/unit/**/*.test.{ts,tsx}",
       "tests/components/**/*.test.{ts,tsx}",
     ],
+    exclude: ["**/._*"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

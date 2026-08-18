@@ -13,6 +13,10 @@ const statusLabels = {
   cancelled: "Đã hủy",
 } as const;
 
+export function getPurchaseBatchStatusLabel(status: PoTimelineItem["status"]) {
+  return statusLabels[status];
+}
+
 const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
   day: "2-digit",
   month: "2-digit",
@@ -31,8 +35,8 @@ export function PoTimeline({ currencyCode, batches }: PoTimelineProps) {
     <section id="po-timeline" className="po-timeline" aria-labelledby="po-timeline-title">
       <header>
         <div>
-          <p className="section-index">Lịch cung ứng</p>
-          <h2 id="po-timeline-title">Các đợt PO & ETA</h2>
+          <p className="section-index">Đợt mua & ngày hàng về</p>
+          <h2 id="po-timeline-title">Lịch cung ứng</h2>
         </div>
         <div className="po-timeline__legend" aria-label="Chú giải trạng thái">
           {Object.entries(statusLabels).slice(0, 4).map(([status, label]) => (
@@ -47,19 +51,19 @@ export function PoTimeline({ currencyCode, batches }: PoTimelineProps) {
           {batches.map((batch) => (
             <li key={batch.id}>
               <div className="po-timeline__marker" aria-hidden="true" />
-              <article>
+              <article aria-label={`PO #${batch.batchNumber} · ${batch.name}`}>
                 <header>
                   <div>
                     <small>PO #{batch.batchNumber}</small>
                     <h3>{batch.name}</h3>
                   </div>
                   <span className={`po-status po-status--${batch.status}`}>
-                    {statusLabels[batch.status]}
+                    {getPurchaseBatchStatusLabel(batch.status)}
                   </span>
                 </header>
                 <dl>
-                  <div><dt>Order</dt><dd>{dateFormatter.format(new Date(batch.orderDate))}</dd></div>
-                  <div><dt>ETA</dt><dd>{dateFormatter.format(new Date(batch.etaDate))}</dd></div>
+                  <div><dt>Ngày đặt</dt><dd>{dateFormatter.format(new Date(batch.orderDate))}</dd></div>
+                  <div><dt>Ngày hàng về</dt><dd>{dateFormatter.format(new Date(batch.etaDate))}</dd></div>
                   <div><dt>Giá trị</dt><dd>{money.format(batch.amount)}</dd></div>
                   <div><dt>Dòng hàng</dt><dd>{batch.lineCount.toLocaleString("vi-VN")}</dd></div>
                 </dl>

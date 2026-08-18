@@ -2,10 +2,31 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(9);
+select plan(12);
 
 select has_table('public', 'import_batches', 'import batches exist');
 select has_table('public', 'source_snapshots', 'source snapshots exist');
+select has_column(
+  'public',
+  'import_batches',
+  'source_sheet_name',
+  'import batches expose source sheet audit metadata'
+);
+select col_not_null(
+  'public',
+  'import_batches',
+  'source_sheet_name',
+  'source sheet metadata is not nullable'
+);
+select ok(
+  not exists (
+    select 1
+    from public.import_batches
+    where source_sheet_name is null
+       or btrim(source_sheet_name) = ''
+  ),
+  'source sheet audit metadata is backfilled and nonblank'
+);
 select is(
   (select public from storage.buckets where id = 'po-forecast-imports'),
   false,
@@ -18,6 +39,7 @@ insert into public.import_batches (
   file_name,
   file_size,
   checksum,
+  source_sheet_name,
   status
 )
 values
@@ -27,6 +49,7 @@ values
     'error.xlsx',
     100,
     'checksum-error',
+    'Forecast 5M',
     'validated'
   ),
   (
@@ -35,6 +58,7 @@ values
     'warning.xlsx',
     100,
     'checksum-warning',
+    'Forecast 5M',
     'validated'
   ),
   (
@@ -43,6 +67,7 @@ values
     'clean.xlsx',
     100,
     'checksum-clean',
+    'Forecast 5M',
     'validated'
   );
 

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const localPassword = "Local" + "Demo!2026";
+export const localResetToken = "local-e2e-reset-token";
 
 export interface E2ECycle {
   cycleId: string;
@@ -38,7 +39,7 @@ export async function resetCycle(page: Page): Promise<E2ECycle> {
   const result = await page.evaluate(async (id) => {
     const response = await fetch("/api/e2e/reset", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "x-e2e-reset-token": localResetToken },
       body: JSON.stringify({ runId: id }),
     });
     return { status: response.status, body: await response.json() };

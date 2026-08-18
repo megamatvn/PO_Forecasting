@@ -1,125 +1,74 @@
-import Link from "next/link";
-import type { CurrentAccess } from "@/features/auth/access-types";
-import { canPerform } from "@/features/auth/permissions";
+import Image from "next/image";
+import { BrandSwitcher } from "@/components/navigation/brand-switcher";
+import { NavigationLink } from "@/components/navigation/navigation-link";
+import {
+  resolveNavigationGroups,
+  type NavigationGroup,
+} from "@/components/navigation/navigation-model";
+import type { CurrentAccessV2 } from "@/features/auth/access-types";
 
 interface AppSidebarProps {
-  access: CurrentAccess;
+  access: CurrentAccessV2;
+  navigationGroups?: readonly NavigationGroup[];
 }
 
-interface NavigationItem {
-  href: string;
-  label: string;
-  marker: string;
-  visible: boolean;
-}
-
-const roleLabels = {
-  administrator: "Administrator",
-  planner: "Planner / Buyer",
-  approver_l1: "Approver L1",
-  approver_l2: "Approver L2",
-  viewer: "Viewer / Auditor",
+const tierLabels = {
+  employee_viewer: "Nhân viên xem",
+  leader: "Trưởng nhóm",
+  manager: "Quản lý",
+  executive: "CEO / BOD",
 } as const;
 
-export function AppSidebar({ access }: AppSidebarProps) {
-  const roles = new Set(access.roles);
-  const canView = canPerform(roles, "view");
-  const canApprove =
-    canPerform(roles, "approve_l1") || canPerform(roles, "approve_l2");
-  const canAdminister = canPerform(roles, "administer");
-
-  const navigation: NavigationItem[] = [
-    { href: "/dashboard", label: "Tổng quan", marker: "01", visible: canView },
-    {
-      href: "/planning",
-      label: "Forecast Planning",
-      marker: "02",
-      visible: canView,
-    },
-    {
-      href: "/imports",
-      label: "Import dữ liệu",
-      marker: "03",
-      visible: canAdminister,
-    },
-    {
-      href: "/approvals",
-      label: "Hồ sơ chờ duyệt",
-      marker: "04",
-      visible: canApprove,
-    },
-    {
-      href: "/versions",
-      label: "Lịch sử phiên bản",
-      marker: "05",
-      visible: canView,
-    },
-    {
-      href: "/admin/approval-policies",
-      label: "Chính sách duyệt",
-      marker: "06",
-      visible: canAdminister,
-    },
-    {
-      href: "/admin/users",
-      label: "Người dùng & quyền",
-      marker: "07",
-      visible: canAdminister,
-    },
-  ];
+export function AppSidebar({ access, navigationGroups }: AppSidebarProps) {
+  const visibleGroups = navigationGroups ?? resolveNavigationGroups(access);
+  const navigationItems = visibleGroups.flatMap((group) => group.items);
 
   return (
     <aside className="app-sidebar">
       <div className="brand-lockup">
-        <span className="brand-monogram" aria-hidden="true">
-          S
-        </span>
-        <div>
-          <p className="brand-name">Sagen Groupe</p>
-          <p className="brand-product">PO Forecasting</p>
+        <Image
+          className="brand-symbol"
+          src="/brand/sagen-symbol.png"
+          width={42}
+          height={42}
+          alt=""
+          aria-hidden="true"
+          priority
+          unoptimized
+        />
+        <div className="brand-lockup__copy">
+          <Image
+            className="brand-wordmark"
+            src="/brand/sagen-wordmark.png"
+            width={118}
+            height={59}
+            alt="Sagen Group"
+            priority
+            unoptimized
+          />
+          <p className="brand-product">Trung tâm lập kế hoạch</p>
         </div>
       </div>
 
-      <form className="brand-picker" action="/dashboard" method="get">
-        <label htmlFor="sidebar-brand">Nhãn hàng</label>
-        <div className="brand-picker__control">
-          <select
-            id="sidebar-brand"
-            name="brandId"
-            aria-label="Nhãn hàng"
-            defaultValue={access.activeBrandId ?? ""}
-          >
-            {access.brands.length === 0 ? (
-              <option value="">Chưa được cấp nhãn hàng</option>
-            ) : null}
-            {access.brands.map((brand) => (
-              <option key={brand.id} value={brand.id}>
-                {brand.code} · {brand.name}
-              </option>
-            ))}
-          </select>
-          <button type="submit" aria-label="Áp dụng nhãn hàng">
-            ↗
-          </button>
-        </div>
-      </form>
+      <BrandSwitcher access={access} id="sidebar-brand" />
 
       <nav className="primary-navigation" aria-label="Điều hướng chính">
-        <p className="navigation-label">Workspace</p>
-        <ul>
-          {navigation
-            .filter((item) => item.visible)
-            .map((item) => (
-              <li key={item.href}>
-                <Link href={item.href}>
-                  <span className="nav-marker" aria-hidden="true">
-                    {item.marker}
-                  </span>
-                  <span>{item.label}</span>
-                </Link>
-              </li>
-            ))}
-        </ul>
+        {visibleGroups.map((group) => (
+          <section key={group.label} className="primary-navigation__group">
+            <p className="navigation-label">{group.label}</p>
+            <ul>
+              {group.items.map((item) => (
+                <li key={item.href}>
+                  <NavigationLink
+                    item={item}
+                    items={navigationItems}
+                    access={access}
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </nav>
 
       <div className="sidebar-user">
@@ -127,7 +76,9 @@ export function AppSidebar({ access }: AppSidebarProps) {
         <div>
           <p>{access.displayName}</p>
           <p className="sidebar-user__roles">
-            {access.roles.map((role) => roleLabels[role]).join(" · ") || "Chưa có vai trò"}
+            {access.isAdministrator
+              ? `${tierLabels[access.tier]} · Quản trị hệ thống`
+              : tierLabels[access.tier]}
           </p>
         </div>
       </div>

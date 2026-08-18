@@ -2,12 +2,36 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(8);
+select plan(13);
+
+select has_column(
+  'public',
+  'import_batches',
+  'source_sheet_name',
+  'import batches retain the selected source sheet'
+);
+
+select col_not_null(
+  'public',
+  'import_batches',
+  'source_sheet_name',
+  'source sheet metadata is required for new batches'
+);
+
+select ok(
+  not exists (
+    select 1
+    from public.import_batches
+    where source_sheet_name is null
+       or btrim(source_sheet_name) = ''
+  ),
+  'legacy batches are backfilled and source sheet metadata is never blank'
+);
 
 select has_function(
   'public',
   'stage_import_batch',
-  array['uuid', 'text', 'bigint', 'text', 'text', 'jsonb', 'jsonb'],
+  array['uuid', 'text', 'bigint', 'text', 'text', 'text', 'jsonb', 'jsonb'],
   'atomic import staging RPC exists'
 );
 
@@ -33,6 +57,24 @@ select ok(
   'administrators can upload brand-scoped import files'
 );
 
+select throws_ok(
+  $$
+    select public.stage_import_batch(
+      '10000000-0000-0000-0000-000000000001',
+      'atomic-stage.xlsx',
+      1024,
+      '10000000-0000-0000-0000-000000000001/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/atomic-stage.xlsx',
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      '',
+      '[{"rowNumber":7,"rawSku":"ET-015027","canonicalSku":"ET-015025","productName":"Đặc trị xanh","exPrice":"4.25","currentStock":100,"purchaseWaves":[]}]'::jsonb,
+      '[{"rowNumber":7,"field":"purchaseWaves.6.importedAmount","severity":"warning","code":"formula_mismatch","message":"Amount mismatch"}]'::jsonb
+    )
+  $$,
+  '22023',
+  'import_source_sheet_name_required',
+  'a blank source sheet is rejected'
+);
+
 select lives_ok(
   $$
     select public.stage_import_batch(
@@ -41,6 +83,7 @@ select lives_ok(
       1024,
       '10000000-0000-0000-0000-000000000001/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/atomic-stage.xlsx',
       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      'Forecast 5M',
       '[{"rowNumber":7,"rawSku":"ET-015027","canonicalSku":"ET-015025","productName":"Đặc trị xanh","exPrice":"4.25","currentStock":100,"purchaseWaves":[]}]'::jsonb,
       '[{"rowNumber":7,"field":"purchaseWaves.6.importedAmount","severity":"warning","code":"formula_mismatch","message":"Amount mismatch"}]'::jsonb
     )
@@ -56,6 +99,16 @@ select is(
   ),
   'validated'::public.import_batch_status,
   'staged batch is ready for commit validation'
+);
+
+select is(
+  (
+    select source_sheet_name
+    from public.import_batches
+    where checksum = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+  ),
+  'Forecast 5M',
+  'staged batch retains the selected source sheet'
 );
 
 select is(

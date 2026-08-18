@@ -1,7 +1,7 @@
 import type { PlanningWorkspaceView } from "@/features/planning/planning-types";
 
 const statusLabels = {
-  draft: "Draft",
+  draft: "Bản nháp",
   submitted: "Đã gửi duyệt",
   review_l1: "Chờ duyệt cấp 1",
   review_l2: "Chờ duyệt cấp 2",
@@ -24,8 +24,10 @@ export function PlanningHeader({
   return (
     <header className="planning-header">
       <div>
-        <p className="eyebrow">{plan.cycle.code} · Forecast 5M</p>
-        <h1>{plan.cycle.name}</h1>
+        <p className="eyebrow">
+          {plan.brand.code} · {plan.cycle.planningYear}
+        </p>
+        <h1>Kế hoạch mua hàng {plan.brand.code} · {plan.cycle.planningYear}</h1>
         <p>
           Phiên bản {plan.version.versionNumber} · Cập nhật{" "}
           {new Intl.DateTimeFormat("vi-VN", {

@@ -90,4 +90,25 @@ describe("validateImport", () => {
     expect(result.canCommit).toBe(false);
     expect(result.issues.filter((item) => item.code === "invalid_number")).toHaveLength(2);
   });
+
+  it("keeps rounded fractional demand committable but visible as a warning", () => {
+    const result = validateImport(
+      [{
+        ...baseRow,
+        monthlyDemand: [{
+          demandMonth: "2026-01-01",
+          demandQty: 228,
+          roundedFrom: 227.5,
+        }],
+      }],
+      new Set(["ET-015025"]),
+    );
+
+    expect(result.canCommit).toBe(true);
+    expect(result.issues).toContainEqual(expect.objectContaining({
+      severity: "warning",
+      code: "fractional_quantity_rounded",
+      field: "monthlyDemand.2026-01-01.demandQty",
+    }));
+  });
 });

@@ -17,6 +17,7 @@ test-results/
 .superpowers/
 scratch/
 .DS_Store
+._*
 
 # Private source workbooks and generated spreadsheet artifacts
 *.xlsx

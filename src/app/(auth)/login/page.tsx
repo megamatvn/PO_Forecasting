@@ -5,15 +5,15 @@ export default function LoginPage() {
     <main className="login-page">
       <section className="login-editorial" aria-labelledby="login-heading">
         <div>
-          <p className="eyebrow">Sagen Groupe · Operations</p>
+          <p className="eyebrow">Sagen Group · Vận hành</p>
           <h1 id="login-heading">
-            Forecast rõ ràng.
+            Kế hoạch rõ ràng.
             <br />
             Quyết định <em>có kiểm soát.</em>
           </h1>
         </div>
         <p className="login-editorial__note">
-          Một nguồn dữ liệu chính thức cho tồn kho, kế hoạch PO, phê duyệt và lịch sử phiên bản.
+          Một nguồn dữ liệu chính thức cho tồn kho, kế hoạch mua hàng, phê duyệt và lịch sử phiên bản.
         </p>
       </section>
 
@@ -22,7 +22,7 @@ export default function LoginPage() {
           <p className="section-index">01 / Truy cập nội bộ</p>
           <h2>Chào mừng trở lại</h2>
           <p className="muted-copy">
-            Sử dụng tài khoản được Sagen cấp để tiếp tục vào workspace.
+            Sử dụng tài khoản được Sagen cấp để tiếp tục vào hệ thống.
           </p>
           <LoginForm />
           <p className="security-note">

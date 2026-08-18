@@ -62,4 +62,30 @@ describe("approval decision route", () => {
 
     expect(response.status).toBe(400);
   });
+
+  it("returns forbidden when the database rejects the current approval role", async () => {
+    createServerSupabaseClient.mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "user" } } }) },
+      rpc: vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: "approval_role_required" },
+      }),
+    });
+    const { POST } = await import("@/app/api/approvals/[requestId]/decision/route");
+
+    const response = await POST(
+      makeRequest({
+        action: "approve",
+        comment: "Đồng ý",
+        idempotencyKey: "71000000-0000-0000-0000-000000000001",
+      }),
+      { params: Promise.resolve({ requestId }) },
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "forbidden",
+      message: "Bạn không có quyền quyết định tại cấp duyệt hiện tại.",
+    });
+  });
 });

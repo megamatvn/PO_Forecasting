@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ImportDropzone } from "@/features/imports/components/import-dropzone";
 import { ImportPreview } from "@/features/imports/components/import-preview";
+import { SheetSelector } from "@/features/imports/components/sheet-selector";
 import {
   httpImportTransport,
   useImportWorkflow,
@@ -11,24 +12,51 @@ import {
 
 interface ImportWorkflowProps {
   brandId: string;
+  brandLabel?: string;
   transport?: ImportWorkflowTransport;
 }
 
 export function ImportWorkflow({
   brandId,
+  brandLabel,
   transport = httpImportTransport,
 }: ImportWorkflowProps) {
   const [fileName, setFileName] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const workflow = useImportWorkflow({ brandId, transport });
+  const currentStep = workflow.result
+    ? "confirm"
+    : workflow.preview || workflow.state === "uploading" || workflow.sheetSelection
+      ? "check"
+      : "choose";
+  const steps = [
+    { id: "choose", label: "Chọn file" },
+    { id: "check", label: "Kiểm tra" },
+    { id: "confirm", label: "Xác nhận nhập dữ liệu" },
+  ] as const;
 
   return (
     <div className="import-workflow">
+      <ol className="import-steps" aria-label="Tiến trình nhập dữ liệu">
+        {steps.map((step, index) => (
+          <li
+            key={step.id}
+            aria-current={step.id === currentStep ? "step" : undefined}
+          >
+            <span aria-hidden="true">{index + 1}</span>
+            {step.label}
+          </li>
+        ))}
+      </ol>
       <ImportDropzone
         fileName={fileName}
         disabled={workflow.state === "uploading"}
         onFileSelected={(file) => {
           setFileName(file.name);
-          void workflow.selectFile(file);
+          setSelectedFile(file);
+          void workflow.selectFile(file).then((previewed) => {
+            if (previewed) setSelectedFile(null);
+          });
         }}
       />
 
@@ -39,6 +67,23 @@ export function ImportWorkflow({
         </div>
       ) : null}
 
+      {workflow.sheetSelection ? (
+        <SheetSelector
+          candidates={workflow.sheetSelection.candidates}
+          fileName={fileName}
+          disabled={workflow.state === "uploading"}
+          onSelect={(candidate) => {
+            if (selectedFile) {
+              void workflow
+                .selectFile(selectedFile, candidate.sheetName)
+                .then((previewed) => {
+                  if (previewed) setSelectedFile(null);
+                });
+            }
+          }}
+        />
+      ) : null}
+
       {workflow.error ? (
         <div className="form-alert form-alert--error" role="alert">
           {workflow.error}
@@ -47,10 +92,10 @@ export function ImportWorkflow({
 
       {workflow.result ? (
         <section className="import-success" role="status">
-          <p className="section-index">03 · Snapshot nguồn</p>
-          <h2>Import hoàn tất</h2>
+          <p className="section-index">03 · Dữ liệu nguồn</p>
+          <h2>Nhập dữ liệu hoàn tất</h2>
           <p>
-            Snapshot được tạo lúc{" "}
+            Bản dữ liệu nguồn được tạo lúc{" "}
             <strong>
               {new Intl.DateTimeFormat("vi-VN", {
                 day: "2-digit",
@@ -62,7 +107,7 @@ export function ImportWorkflow({
               }).format(new Date(workflow.result.committedAt))}
             </strong>
           </p>
-          <p>{workflow.result.affectedDraftCount} bản Draft bị ảnh hưởng</p>
+          <p>{workflow.result.affectedDraftCount} bản nháp bị ảnh hưởng</p>
         </section>
       ) : null}
 
@@ -73,6 +118,8 @@ export function ImportWorkflow({
           warningsConfirmed={workflow.warningsConfirmed}
           canCommit={workflow.canCommit}
           isCommitting={workflow.state === "committing"}
+          fileName={fileName}
+          brandLabel={brandLabel}
           onCommit={() => void workflow.commit()}
           onWarningsConfirmedChange={workflow.setWarningsConfirmed}
         />

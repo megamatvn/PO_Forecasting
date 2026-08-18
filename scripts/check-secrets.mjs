@@ -9,6 +9,10 @@ function inspectText(label, text) {
 }
 
 function inspectFile(path) {
+  // `git ls-files` includes paths staged for deletion in the working tree.
+  // The scan must verify files that exist in the current checkout while still
+  // scanning deleted content through the Git-history pass below.
+  if (!existsSync(path)) return;
   const data = readFileSync(path);
   if (data.includes(0)) return;
   inspectText(path, data.toString("utf8"));

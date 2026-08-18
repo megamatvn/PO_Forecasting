@@ -1,0 +1,750 @@
+.plan-context-bar {
+  margin-top: 1.25rem;
+}
+
+.plan-context-bar dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0;
+  margin: 0;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 82%);
+  padding: 0.45rem 0.25rem;
+  box-shadow: 0 0.35rem 1.1rem rgb(16 64 45 / 5%);
+}
+
+.plan-context-bar dl > div {
+  display: grid;
+  gap: 0.1rem;
+  border-left: 1px solid var(--line);
+  padding: 0.15rem 0.85rem;
+}
+
+.plan-context-bar dl > div:first-child {
+  border-left: 0;
+}
+
+.plan-context-bar dt {
+  color: var(--ink-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.plan-context-bar dd {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 650;
+}
+
+.planning-workflow-nav {
+  border-bottom: 1px solid var(--line);
+}
+
+.planning-workflow-nav ol {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0 0 0.7rem;
+  overflow-x: auto;
+  list-style: none;
+}
+
+.planning-workflow-nav a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.45rem;
+  border-bottom: 2px solid transparent;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.45rem 0.7rem;
+  white-space: nowrap;
+}
+
+.planning-workflow-nav a:hover {
+  color: var(--ink);
+}
+
+.planning-workflow-nav a[aria-current="step"] {
+  border-color: var(--brand-primary);
+  color: var(--ink);
+}
+
+.planning-workflow-nav a > span {
+  display: inline-grid;
+  width: 1.35rem;
+  height: 1.35rem;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.68rem;
+}
+
+.planning-step-summary,
+.planning-submit-summary {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 1.25rem;
+  box-shadow: 0 0.5rem 1.75rem rgb(16 64 45 / 5%);
+}
+
+.planning-step-summary h2,
+.planning-submit-summary h2 {
+  margin: 0.2rem 0 0.55rem;
+  font-size: 1.65rem;
+}
+
+.planning-step-summary > p:last-child,
+.planning-submit-summary > div > p:last-child {
+  margin-bottom: 0;
+  color: var(--ink-soft);
+}
+
+.planning-step-summary__metrics,
+.planning-submit-summary__checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 1rem 0;
+  border: 1px solid var(--line);
+}
+
+.planning-step-summary__metrics > div,
+.planning-submit-summary__checks > div {
+  padding: 0.75rem 0.9rem;
+}
+
+.planning-step-summary__metrics dt,
+.planning-submit-summary__checks dt {
+  color: var(--ink-muted);
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.planning-step-summary__metrics dd,
+.planning-submit-summary__checks dd {
+  margin: 0.15rem 0 0;
+  font-weight: 700;
+}
+
+.planning-submit-summary__checks {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.planning-submit-summary .planning-approval-toolbar {
+  margin-top: 1rem;
+}
+
+.planning-workspace__detail {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(36rem, 58fr) minmax(24rem, 42fr);
+  gap: 1rem;
+}
+
+.planning-product-list,
+.planning-product-editor {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 0.5rem 1.75rem rgb(16 64 45 / 5%);
+  overflow: hidden;
+}
+
+.planning-product-list__header,
+.planning-product-editor__header {
+  border-bottom: 1px solid var(--line);
+  padding: 1rem 1.1rem;
+}
+
+.planning-product-list__header h2,
+.planning-product-editor__header h2 {
+  margin: 0.2rem 0 0;
+  font-size: 1.55rem;
+}
+
+.planning-product-list__header p,
+.planning-product-editor__header p {
+  margin: 0.3rem 0 0;
+}
+
+.planning-product-list__results {
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+}
+
+.planning-product-list__toolbar {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(8rem, 0.55fr) minmax(9rem, 0.65fr);
+  gap: 0.65rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.85rem 1rem;
+}
+
+.planning-product-list__toolbar label,
+.planning-product-editor__field label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--ink-soft);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.planning-product-list__toolbar input,
+.planning-product-list__toolbar select,
+.planning-product-editor__form input {
+  min-height: 2.65rem;
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: #fffdf8;
+  padding: 0.45rem 0.6rem;
+}
+
+.planning-product-list__table-wrap {
+  max-height: 32rem;
+  overflow: auto;
+}
+
+.planning-product-list table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.planning-product-list__col-sku {
+  width: 6.75rem;
+}
+
+.planning-product-list__col-number {
+  width: 6.5rem;
+}
+
+.planning-product-list__col-status {
+  width: 6.75rem;
+}
+
+.planning-product-list th,
+.planning-product-list td {
+  border-bottom: 1px solid var(--surface-soft);
+  padding: 0.65rem;
+  text-align: left;
+}
+
+.planning-product-list th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  background: #e8e4dc;
+  color: var(--ink-soft);
+  font-size: 0.64rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.planning-product-list__sku {
+  white-space: nowrap;
+}
+
+.planning-product-list__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-product-list__number {
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.truncated-text {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.truncated-text__value {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.truncated-text:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.truncated-text__tooltip {
+  position: absolute;
+  z-index: 5;
+  bottom: calc(100% + 0.4rem);
+  left: 0;
+  width: max-content;
+  max-width: min(24rem, 70vw);
+  border: 1px solid #3d3a34;
+  background: #1d1c19;
+  color: #fff;
+  padding: 0.45rem 0.6rem;
+  box-shadow: 0 0.5rem 1.25rem rgb(0 0 0 / 18%);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.planning-product-list tbody tr {
+  cursor: pointer;
+}
+
+.planning-product-list tbody tr:hover,
+.planning-product-list tbody tr.is-selected {
+  background: #f6f0df;
+}
+
+.planning-product-list tbody tr:focus-visible,
+.planning-product-editor input:focus-visible,
+.planning-product-editor__back:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.planning-product-list__current {
+  display: block;
+  color: var(--success);
+  font-size: 0.69rem;
+  font-weight: 700;
+}
+
+.planning-product-list__empty {
+  margin: 0;
+  padding: 1rem;
+  color: var(--ink-muted);
+}
+
+.planning-product-editor__context {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.planning-product-editor__context > div {
+  padding: 0.8rem 1rem;
+}
+
+.planning-product-editor__context dt {
+  color: var(--ink-muted);
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.planning-product-editor__context dd {
+  margin: 0.15rem 0 0;
+  font-weight: 700;
+}
+
+.planning-product-editor__form {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.planning-product-editor__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.planning-product-editor__field {
+  min-width: 0;
+}
+
+.planning-product-editor__field--amount {
+  grid-column: 1 / -1;
+}
+
+.planning-product-editor__form small {
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+
+.planning-product-editor__form input[readonly] {
+  background: var(--surface-soft);
+  font-weight: 700;
+}
+
+.planning-product-editor__form input:disabled {
+  border-color: transparent;
+  background: var(--surface-soft);
+  color: var(--ink);
+  opacity: 1;
+}
+
+.planning-product-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.button.planning-product-editor__back {
+  display: none;
+  min-height: 2.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.field-error {
+  margin: -0.15rem 0 0.2rem;
+  color: var(--critical);
+  font-size: 0.75rem;
+}
+
+.annual-plan-page,
+.annual-plans-page { --annual-plan-accent: #0f7f5f; }
+.annual-plan-catalog { display: grid; gap: 1rem; }
+.annual-plan-catalog__start,
+.annual-plan-catalog__section { display: grid; gap: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); padding: clamp(1rem, 2.4vw, 1.5rem); box-shadow: 0 0.45rem 1.4rem rgb(16 64 45 / 4%); }
+.annual-plan-catalog__start { grid-template-columns: minmax(0, 1fr) minmax(20rem, 32rem); align-items: end; background: linear-gradient(135deg, var(--surface), var(--surface-soft)); }
+.annual-plan-catalog__start h2,
+.annual-plan-catalog__section h2 { margin: 0.2rem 0 0.35rem; font-size: clamp(1.3rem, 2vw, 1.85rem); line-height: 1.1; }
+.annual-plan-catalog__start p:last-child,
+.annual-plan-catalog__section header p:last-child { max-width: 52rem; margin: 0; color: var(--ink-muted); }
+.annual-plan-catalog__start-form { display: grid; grid-template-columns: minmax(9rem, 1fr) minmax(7rem, 0.55fr) auto; align-items: end; gap: 0.65rem; }
+.annual-plan-catalog__start-form label { display: grid; gap: 0.35rem; }
+.annual-plan-catalog__start-form label > span { color: var(--ink-muted); font-size: 0.72rem; font-weight: 800; }
+.annual-plan-catalog__start-form select,
+.annual-plan-catalog__start-form input { width: 100%; min-height: 2.7rem; border: 1px solid var(--line-strong); border-radius: 0.55rem; background: var(--surface); padding: 0.5rem 0.65rem; color: var(--ink); }
+.annual-plan-catalog__start-form .button { min-height: 2.7rem; white-space: nowrap; }
+.annual-plan-catalog__section > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.8rem; }
+.annual-plan-catalog__section > header .status-badge { flex: 0 0 auto; }
+.annual-plan-catalog__section > ul { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+.annual-plan-catalog__item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 1rem; border: 1px solid var(--line); border-radius: 0.8rem; padding: 0.85rem 0.95rem; }
+.annual-plan-catalog__item-main { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; min-width: 0; }
+.annual-plan-catalog__item-main h3 { margin: 0.12rem 0 0.25rem; font-size: 1rem; }
+.annual-plan-catalog__item-main p:last-child { margin: 0; color: var(--ink-muted); font-size: 0.8rem; }
+.annual-plan-catalog__eyebrow { margin: 0; color: var(--annual-plan-accent); font-size: 0.7rem; font-weight: 850; letter-spacing: 0.08em; text-transform: uppercase; }
+.annual-plan-catalog__item-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.45rem; }
+.annual-plan-catalog__item-actions .button { min-height: 2.45rem; }
+.annual-plan-catalog__empty { margin: 0; color: var(--ink-muted); }
+.annual-plan-catalog__conflicts { border-color: color-mix(in srgb, var(--warning) 38%, var(--line)); background: color-mix(in srgb, var(--warning-soft) 42%, var(--surface)); }
+.annual-plan-catalog__conflicts li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; border: 1px solid color-mix(in srgb, var(--warning) 25%, var(--line)); border-radius: 0.7rem; padding: 0.75rem 0.85rem; }
+.annual-plan-catalog__conflicts li span { color: var(--ink-muted); font-size: 0.82rem; }
+.annual-plans-launch,
+.annual-plan-wizard__body,
+.annual-plan-wizard__footer { border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
+.annual-plans-launch { display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding: clamp(1.25rem, 3vw, 2.2rem); }
+.annual-plans-launch h2,
+.annual-plan-section-heading h2,
+.annual-plan-placeholder h2 { margin: 0.25rem 0 0.45rem; font-size: clamp(1.35rem, 2vw, 2.15rem); line-height: 1.1; }
+.annual-plans-launch p,
+.annual-plan-section-heading > p:last-child,
+.annual-plan-placeholder p:last-child { max-width: 58rem; margin: 0; color: var(--ink-muted); }
+.annual-plan-wizard { display: grid; gap: 1rem; }
+.annual-plan-wizard__excel-actions { display: flex; justify-content: flex-end; gap: 0.55rem; }
+.excel-import-dialog { width: min(48rem, calc(100vw - 2rem)); max-height: min(44rem, calc(100vh - 2rem)); overflow: auto; }
+.excel-import-dialog__file { display: grid; gap: 0.4rem; margin-top: 1rem; }
+.excel-import-dialog__file > span { font-size: 0.78rem; font-weight: 800; }
+.excel-import-dialog__file input { width: 100%; min-height: 2.8rem; border: 1px dashed var(--line-strong); border-radius: 0.65rem; background: var(--surface-soft); padding: 0.65rem; }
+.excel-import-dialog__preview { display: grid; gap: 0.65rem; margin-top: 1rem; border: 1px solid var(--line); border-radius: 0.75rem; background: var(--surface-soft); padding: 0.85rem; }
+.excel-import-dialog__preview p { margin: 0; color: var(--ink-muted); font-size: 0.82rem; }
+.excel-import-dialog__preview ul { display: grid; gap: 0.25rem; max-height: 10rem; overflow: auto; margin: 0; padding-left: 1.1rem; color: var(--ink-muted); font-size: 0.8rem; }
+.excel-import-dialog__preview label { display: flex; align-items: flex-start; gap: 0.5rem; color: var(--ink); font-size: 0.82rem; font-weight: 700; }
+.excel-import-dialog__actions { display: flex; justify-content: flex-end; gap: 0.55rem; margin-top: 1rem; }
+.annual-plan-stepper { border-bottom: 1px solid var(--line); padding: 0.25rem 0 0.8rem; }
+.annual-plan-stepper ol { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.annual-plan-stepper li a { display: flex; align-items: center; gap: 0.55rem; min-height: 2.75rem; border-bottom: 2px solid transparent; color: var(--ink-muted); text-decoration: none; font-weight: 700; }
+.annual-plan-stepper li[data-current="true"] a { border-color: var(--annual-plan-accent); color: var(--ink); }
+.annual-plan-stepper__number { display: inline-grid; width: 1.75rem; height: 1.75rem; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-size: 0.78rem; }
+.annual-plan-stepper__mobile-label,
+.annual-plan-stepper__progress { display: none; }
+.annual-plan-wizard__body { min-height: 22rem; padding: clamp(1.15rem, 2.5vw, 2.25rem); }
+.annual-plan-section-heading { max-width: 48rem; }
+.annual-plan-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; max-width: 48rem; margin-top: 1.75rem; }
+.annual-plan-form-grid label,
+.annual-plan-form-grid select { width: 100%; }
+.annual-plan-form-grid label { display: grid; gap: 0.4rem; }
+.annual-plan-form-grid label > span { font-size: 0.78rem; font-weight: 800; }
+.annual-plan-form-grid select { min-height: 2.9rem; border: 1px solid var(--line-strong); border-radius: 0.65rem; background: var(--surface); padding: 0.65rem 0.75rem; color: var(--ink); }
+.annual-plan-scope__add-brand { margin-top: 1rem; }
+.annual-plan-wizard__footer { position: sticky; bottom: 0.75rem; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.75rem 1rem; box-shadow: 0 0.5rem 1.5rem rgb(15 39 30 / 7%); }
+.annual-plan-wizard__save-state { flex: 1; color: var(--ink-muted); font-size: 0.78rem; text-align: center; }
+.annual-plan-placeholder { display: grid; min-height: 18rem; align-content: center; justify-items: start; }
+.annual-plan-scope .form-alert { max-width: 48rem; margin-top: 1rem; }
+.annual-plan-completion { display: grid; min-height: 20rem; align-content: center; justify-items: start; gap: 0.7rem; max-width: 48rem; margin: 0 auto; text-align: left; }
+.annual-plan-completion h2 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.5rem); }
+.annual-plan-completion p:not(.section-index) { max-width: 42rem; margin: 0 0 0.8rem; color: var(--ink-muted); }
+
+.annual-lines-step { display: grid; gap: 1rem; }
+.annual-lines-step__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.annual-lines-step__header h2 { margin: 0.2rem 0 0.45rem; font-size: clamp(1.4rem, 2.2vw, 2rem); }
+.annual-lines-step__header p:last-child { max-width: 52rem; margin: 0; color: var(--ink-muted); }
+.annual-lines-step__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.55rem; }
+.annual-lines-step__table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 0.85rem; background: var(--surface); }
+.annual-lines-table { width: 100%; min-width: 68rem; border-collapse: collapse; }
+.annual-lines-table th,
+.annual-lines-table td { border-bottom: 1px solid var(--line); padding: 0.7rem 0.65rem; text-align: right; vertical-align: middle; }
+.annual-lines-table th { background: var(--surface-soft); color: var(--ink-muted); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.annual-lines-table th:first-child,
+.annual-lines-table td:first-child { width: 36%; min-width: 19rem; text-align: left; }
+.annual-lines-table th:last-child,
+.annual-lines-table td:last-child { width: 4rem; }
+.annual-lines-table tbody tr:last-child td { border-bottom: 0; }
+.annual-line-row input,
+.annual-line-row select { width: 100%; min-height: 2.55rem; border: 1px solid var(--line-strong); border-radius: 0.45rem; background: var(--surface); padding: 0.45rem 0.5rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.annual-line-row__product { display: grid; grid-template-columns: minmax(8rem, 0.8fr) minmax(8rem, 1.2fr); align-items: center; gap: 0.6rem; }
+.annual-line-row__name { min-width: 0; color: var(--ink-muted); font-size: 0.82rem; }
+.annual-line-row__name .truncated-text { display: block; max-width: 100%; overflow: hidden; }
+.annual-line-row__name .truncated-text__value { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.annual-line-row__calculated { font-variant-numeric: tabular-nums; font-weight: 750; white-space: nowrap; }
+.annual-lines-step__footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding-top: 0.75rem; color: var(--ink-muted); font-size: 0.82rem; }
+
+.purchase-wave-step { display: grid; gap: 1rem; }
+.purchase-wave-step__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.purchase-wave-step__header h2 { margin: 0.2rem 0 0.45rem; font-size: clamp(1.4rem, 2.2vw, 2rem); }
+.purchase-wave-step__header p:last-child { margin: 0; color: var(--ink-muted); }
+.purchase-wave-step__editors { display: grid; gap: 1rem; }
+.purchase-wave-editor { overflow: hidden; border: 1px solid var(--line); border-radius: 0.9rem; background: var(--surface); }
+.purchase-wave-editor > header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding: 1rem 1.1rem; }
+.purchase-wave-editor h3 { margin: 0.2rem 0 0; font-size: 1.2rem; }
+.purchase-wave-editor__dates { display: grid; grid-template-columns: repeat(2, minmax(0, 15rem)); gap: 0.9rem; padding: 1rem 1.1rem 0; }
+.purchase-wave-editor__dates label { display: grid; gap: 0.35rem; }
+.purchase-wave-editor__dates label > span { color: var(--ink-muted); font-size: 0.75rem; font-weight: 750; }
+.purchase-wave-editor__dates input { min-height: 2.55rem; border: 1px solid var(--line-strong); border-radius: 0.45rem; padding: 0.45rem 0.55rem; color: var(--ink); }
+.allocation-matrix-wrap { overflow-x: auto; padding: 1rem 1.1rem 1.1rem; }
+.allocation-matrix { width: 100%; min-width: 42rem; border-collapse: separate; border-spacing: 0; }
+.allocation-matrix th,
+.allocation-matrix td { border-bottom: 1px solid var(--line); padding: 0.65rem; text-align: center; vertical-align: top; }
+.allocation-matrix thead th { background: var(--surface-soft); color: var(--ink-muted); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.allocation-matrix thead th span,
+.allocation-matrix tbody th span { display: block; margin-top: 0.25rem; color: var(--ink-muted); font-size: 0.72rem; font-weight: 500; letter-spacing: normal; text-transform: none; }
+.allocation-matrix th:first-child,
+.allocation-matrix tbody th { position: sticky; left: 0; z-index: 1; min-width: 10rem; background: var(--surface); text-align: left; }
+.allocation-cell { display: grid; grid-template-columns: repeat(2, minmax(4rem, 1fr)); gap: 0.4rem; min-width: 10rem; }
+.allocation-cell label { display: grid; gap: 0.25rem; }
+.allocation-cell label span { color: var(--ink-muted); font-size: 0.65rem; text-transform: uppercase; }
+.allocation-cell input { width: 100%; min-height: 2.3rem; border: 1px solid var(--line-strong); border-radius: 0.4rem; padding: 0.35rem; text-align: right; font-variant-numeric: tabular-nums; }
+.allocation-cell small { grid-column: 1 / -1; color: var(--ink-muted); font-variant-numeric: tabular-nums; text-align: right; }
+.allocation-matrix tfoot th,
+.allocation-matrix tfoot td { border-bottom: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 750; }
+.allocation-matrix__summary { display: grid; gap: 0.35rem; margin-top: 0.75rem; color: var(--ink-muted); font-size: 0.78rem; }
+.allocation-matrix__summary p { margin: 0; }
+.purchase-wave-step__footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding-top: 0.75rem; color: var(--ink-muted); font-size: 0.82rem; }
+
+.annual-plan-review,
+.annual-plan-history { display: grid; gap: 1.1rem; }
+.annual-plan-review__header,
+.annual-plan-history > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
+.annual-plan-review__header h2,
+.annual-plan-history > header h2 { margin: 0.2rem 0 0.4rem; font-size: clamp(1.45rem, 2.3vw, 2.2rem); }
+.annual-plan-review__header p:last-child,
+.annual-plan-history > header p:last-child { margin: 0; color: var(--ink-muted); }
+.annual-plan-review__scope { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; margin: 0; }
+.annual-plan-review__scope > div,
+.annual-plan-review__totals > div { border: 1px solid var(--line); border-radius: 0.65rem; background: var(--surface-soft); padding: 0.75rem 0.85rem; }
+.annual-plan-review__scope dt,
+.annual-plan-review__totals span,
+.annual-plan-history dl dt { color: var(--ink-muted); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+.annual-plan-review__scope dd { margin: 0.3rem 0 0; font-weight: 750; }
+.annual-plan-review__totals { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.75rem; }
+.annual-plan-review__totals strong { display: block; margin-top: 0.3rem; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.annual-plan-review__waves { border: 1px solid var(--line); border-radius: 0.75rem; overflow: hidden; }
+.annual-plan-review__waves h3 { margin: 0; border-bottom: 1px solid var(--line); background: var(--surface-soft); padding: 0.75rem 0.9rem; font-size: 1rem; }
+.annual-plan-review__waves ul { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.annual-plan-review__waves li { display: grid; grid-template-columns: minmax(7rem, 0.7fr) minmax(10rem, 1fr) minmax(8rem, 0.5fr); gap: 1rem; border-bottom: 1px solid var(--line); padding: 0.75rem 0.9rem; }
+.annual-plan-review__waves li:last-child { border-bottom: 0; }
+.annual-plan-review__waves li span { color: var(--ink-muted); }
+.annual-plan-review__waves li b { text-align: right; }
+.annual-plan-review__actions,
+.annual-plan-review__dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.65rem; }
+.annual-plan-review__message { margin: 0; color: var(--success); font-weight: 700; }
+.annual-plan-review__dialog { max-width: 34rem; }
+.annual-plan-history > ol { display: grid; gap: 0.85rem; margin: 0; padding: 0; list-style: none; }
+.annual-plan-history > ol > li { display: grid; gap: 0.75rem; border: 1px solid var(--line); border-radius: 0.8rem; background: var(--surface); padding: 1rem; }
+.annual-plan-history > ol > li.is-current { border-color: var(--brand-primary); box-shadow: 0 0.35rem 1rem rgb(15 127 95 / 10%); }
+.annual-plan-history__row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.annual-plan-history h3 { margin: 0; font-size: 1.1rem; }
+.annual-plan-history__row p { margin: 0.25rem 0 0; color: var(--ink-muted); font-size: 0.8rem; }
+.annual-plan-history dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin: 0; }
+.annual-plan-history dl > div { border-top: 1px solid var(--line); padding-top: 0.55rem; }
+.annual-plan-history dl dd { margin: 0.25rem 0 0; font-weight: 700; }
+.annual-plan-diff { overflow-x: auto; border-top: 1px solid var(--line); }
+.annual-plan-diff table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.annual-plan-diff th,
+.annual-plan-diff td { border-bottom: 1px solid var(--line); padding: 0.55rem; text-align: left; }
+.annual-plan-diff thead th { color: var(--ink-muted); font-size: 0.68rem; text-transform: uppercase; }
+.annual-plan-diff__empty { margin: 0; color: var(--ink-muted); font-size: 0.82rem; }
+.annual-plan-history-page__action { display: flex; justify-content: flex-end; }
+.annual-plan-approval-inbox { display: grid; gap: 0.85rem; margin-bottom: 1.1rem; border: 1px solid var(--line); border-radius: 0.85rem; background: var(--surface); padding: 1rem; }
+.annual-plan-approval-inbox > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.75rem; }
+.annual-plan-approval-inbox h2 { margin: 0.2rem 0 0.35rem; font-size: 1.35rem; }
+.annual-plan-approval-inbox header p:last-child { margin: 0; color: var(--ink-muted); font-size: 0.82rem; }
+.annual-plan-approval-inbox ul { display: grid; gap: 0.55rem; margin: 0; padding: 0; list-style: none; }
+.annual-plan-approval-inbox li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border: 1px solid var(--line); border-radius: 0.65rem; padding: 0.7rem 0.8rem; }
+.annual-plan-approval-inbox li div { display: grid; gap: 0.2rem; }
+.annual-plan-approval-inbox li span { color: var(--ink-muted); font-size: 0.8rem; }
+
+.proposals-page { display: grid; gap: 1.2rem; }
+.proposal-list,
+.proposal-form,
+.proposal-review { display: grid; gap: 1.1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); padding: clamp(1rem, 2.2vw, 1.5rem); box-shadow: 0 0.55rem 1.8rem rgb(16 64 45 / 5%); }
+.proposal-list > header,
+.proposal-review > header,
+.proposal-form__lines-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.9rem; }
+.proposal-list h2,
+.proposal-form h2,
+.proposal-review h1 { margin: 0.2rem 0 0; font-size: clamp(1.45rem, 2.5vw, 2.1rem); }
+.proposal-list > header > span { color: var(--ink-muted); font-size: 0.82rem; }
+.proposal-list ul { display: grid; gap: 0.65rem; margin: 0; padding: 0; list-style: none; }
+.proposal-list li { border: 1px solid var(--line); border-radius: 0.75rem; transition: border-color 160ms ease, box-shadow 160ms ease; }
+.proposal-list li:hover { border-color: var(--brand-primary); box-shadow: 0 0.35rem 1rem rgb(15 159 110 / 10%); }
+.proposal-list li a { display: grid; grid-template-columns: minmax(12rem, 1.2fr) minmax(12rem, 1fr) auto; align-items: center; gap: 1rem; padding: 0.85rem 1rem; }
+.proposal-list__main { display: grid; gap: 0.15rem; }
+.proposal-list__main strong { color: var(--brand-primary-strong); font-size: 0.78rem; letter-spacing: 0.05em; }
+.proposal-list__main b { font-size: 1rem; }
+.proposal-list__context { color: var(--ink-muted); font-size: 0.84rem; }
+.proposal-form__intro p:last-child { max-width: 58rem; margin: 0.4rem 0 0; color: var(--ink-muted); }
+.proposal-form label,
+.proposal-review label { display: grid; gap: 0.35rem; color: var(--ink-soft); font-size: 0.78rem; font-weight: 750; }
+.proposal-form select,
+.proposal-form input,
+.proposal-form textarea,
+.proposal-review select,
+.proposal-review textarea { width: 100%; min-height: 2.75rem; border: 1px solid var(--line-strong); border-radius: 0.55rem; background: var(--surface); padding: 0.55rem 0.7rem; color: var(--ink); }
+.proposal-form textarea,
+.proposal-review textarea { resize: vertical; }
+.proposal-form__scope { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+.proposal-form__lines { display: grid; gap: 0.75rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+.proposal-form__lines-header h3 { margin: 0.15rem 0 0; font-size: 1.35rem; }
+.proposal-form__line { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(10rem, 0.55fr) auto; align-items: end; gap: 0.75rem; border: 1px solid var(--line); border-radius: 0.7rem; background: var(--surface-soft); padding: 0.8rem; }
+.proposal-form__footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+.proposal-form__footer p { margin: 0; color: var(--ink-muted); font-size: 0.82rem; }
+.proposal-review > header p:last-child { margin: 0.35rem 0 0; color: var(--ink-muted); }
+.proposal-review__summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.7rem; }
+.proposal-review__summary > div,
+.proposal-review__reason,
+.proposal-review__assignment,
+.proposal-review__decision { border: 1px solid var(--line); border-radius: 0.75rem; padding: 0.85rem; }
+.proposal-review__summary span,
+.proposal-review__reason > span { display: block; color: var(--ink-muted); font-size: 0.67rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.proposal-review__summary strong { display: block; margin-top: 0.25rem; font-size: 0.9rem; }
+.proposal-review__reason p { margin: 0.35rem 0 0; color: var(--ink-soft); }
+.proposal-review__lines { overflow-x: auto; }
+.proposal-review__lines h2,
+.proposal-review__assignment h2,
+.proposal-review__decision h2 { margin: 0 0 0.7rem; font-size: 1.05rem; }
+.proposal-review__lines table { width: 100%; border-collapse: collapse; }
+.proposal-review__lines th,
+.proposal-review__lines td { border-bottom: 1px solid var(--line); padding: 0.65rem 0.55rem; text-align: left; }
+.proposal-review__lines thead th { color: var(--ink-muted); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.proposal-review__lines tbody td:last-child { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.proposal-review__assignment { display: grid; gap: 0.7rem; background: var(--surface-soft); }
+.proposal-review__assignment p { margin: 0; color: var(--ink-muted); font-size: 0.84rem; }
+.wave-assignment-panel { max-width: 28rem; }
+.proposal-review__capacity { display: grid; gap: 0.15rem; color: var(--success); font-size: 0.82rem; }
+.proposal-review__capacity > span { display: flex; flex-wrap: wrap; gap: 0.5rem; color: var(--ink-muted); }
+.proposal-review__capacity--warning { color: var(--critical); }
+.proposal-review__decision { display: grid; gap: 0.75rem; }
+.proposal-review__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.6rem; }
+.button--danger { border-color: var(--critical); background: var(--critical); color: #fff; }
+.button--text { border: 0; background: transparent; color: var(--critical); padding-inline: 0.3rem; }
+.form-error { margin: 0; border-left: 3px solid var(--critical); background: var(--critical-soft); padding: 0.65rem 0.8rem; color: var(--critical); font-weight: 700; }
+
+@media (max-width: 760px) {
+  .proposal-form__scope,
+  .proposal-review__summary { grid-template-columns: 1fr; }
+  .proposal-form__line { grid-template-columns: 1fr; align-items: stretch; }
+  .proposal-form__footer,
+  .proposal-list li a { align-items: stretch; grid-template-columns: 1fr; flex-direction: column; }
+  .proposal-list li a { display: grid; }
+  .proposal-review__actions { justify-content: stretch; }
+  .proposal-review__actions .button { flex: 1; }
+}
+
+@media (max-width: 900px) {
+  .annual-plan-catalog__start { grid-template-columns: 1fr; }
+  .annual-plan-catalog__start-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .annual-plan-catalog__start-form .button { grid-column: 1 / -1; }
+  .planning-workspace__detail {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-product-list__toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .annual-plan-review__scope,
+  .annual-plan-review__totals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .annual-plan-catalog__start-form { grid-template-columns: 1fr; }
+  .annual-plan-catalog__start-form .button { grid-column: auto; }
+  .annual-plan-catalog__item,
+  .annual-plan-catalog__item-main { grid-template-columns: 1fr; flex-direction: column; align-items: stretch; }
+  .annual-plan-catalog__item-actions { justify-content: stretch; }
+  .annual-plan-catalog__item-actions .button { flex: 1; }
+  .annual-plan-wizard__excel-actions { justify-content: stretch; }
+  .annual-plan-wizard__excel-actions > * { flex: 1; justify-content: center; }
+  .button.planning-product-editor__back {
+    display: inline-flex;
+  }
+
+  .planning-workflow-nav ol {
+    padding-bottom: 0.4rem;
+  }
+
+  .planning-step-summary__metrics,
+  .planning-submit-summary__checks {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-workspace__detail[data-planning-view="list"] .planning-product-editor,
+  .planning-workspace__detail[data-planning-view="detail"] .planning-product-list {
+    display: none;
+  }
+
+  .planning-product-list__table-wrap {
+    max-height: none;
+  }
+
+  .planning-product-list th:nth-child(3),
+  .planning-product-list td:nth-child(3),
+  .planning-product-list th:nth-child(4),
+  .planning-product-list td:nth-child(4) {
+    display: none;
+  }
+
+  .planning-product-editor__fields {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-product-editor__field--amount {
+    grid-column: auto;
+  }
+
+  .annual-plan-review__header,
+  .annual-plan-history > header,
+  .annual-plan-approval-inbox > header,
+  .annual-plan-history__row { flex-direction: column; }
+
+  .annual-plan-review__scope,
+  .annual-plan-review__totals,
+  .annual-plan-history dl { grid-template-columns: 1fr; }
+
+  .annual-plan-review__waves li { grid-template-columns: 1fr; gap: 0.3rem; }
+  .annual-plan-review__waves li b { text-align: left; }
+  .annual-plan-approval-inbox li { align-items: stretch; flex-direction: column; }
+}

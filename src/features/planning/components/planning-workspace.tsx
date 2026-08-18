@@ -1,13 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SubmitPlanDialog } from "@/features/approvals/components/approval-review";
 import { KpiStrip } from "@/features/planning/components/kpi-strip";
-import { PlanningGrid } from "@/features/planning/components/planning-grid";
 import { PlanningHeader } from "@/features/planning/components/planning-header";
-import { PlanningInsights } from "@/features/planning/components/planning-insights";
-import { PlanningTabs } from "@/features/planning/components/planning-tabs";
+import { PlanningProductEditor } from "@/features/planning/components/planning-product-editor";
+import { PlanningProductList } from "@/features/planning/components/planning-product-list";
+import {
+  PlanningWorkflowNav,
+  resolvePlanningWorkflowStep,
+} from "@/features/planning/components/planning-workflow-nav";
 import { StockAlert } from "@/features/planning/components/stock-alert";
+import { PoTimeline } from "@/features/reports/components/po-timeline";
+import type { PoTimelineItem } from "@/features/reports/report-types";
 import { calculateAmount } from "@/lib/domain/money";
 import {
   httpDraftSaver,
@@ -32,6 +37,11 @@ interface PlanningWorkspaceProps {
   submitApproval?: (
     exceptionFlags: Record<string, boolean>,
   ) => Promise<void>;
+  workflowStep?: string;
+  workflowBasePath?: string;
+  workflowBrandId?: string | null;
+  poBatches?: readonly PoTimelineItem[];
+  initialSelectedPlanLineId?: string | null;
 }
 
 const saveLabels = {
@@ -49,17 +59,44 @@ export function PlanningWorkspace({
   presenceDisplayName,
   previewApproval,
   submitApproval,
+  workflowStep,
+  workflowBasePath,
+  workflowBrandId,
+  poBatches = [],
+  initialSelectedPlanLineId,
 }: PlanningWorkspaceProps) {
+  const hasDirectSelection = Boolean(
+    initialSelectedPlanLineId
+    && initialPlan.rows.some((row) => row.planLineId === initialSelectedPlanLineId),
+  );
   const [plan, setPlan] = useState(initialPlan);
+  const [selectedPlanLineId, setSelectedPlanLineId] = useState<string | null>(
+    hasDirectSelection
+      ? initialSelectedPlanLineId ?? null
+      : initialPlan.rows[0]?.planLineId ?? null,
+  );
+  const [mobileView, setMobileView] = useState<"list" | "detail">(
+    hasDirectSelection ? "detail" : "list",
+  );
   const [approvalRoute, setApprovalRoute] = useState<ApprovalRoute | null>(null);
   const [approvalLoading, setApprovalLoading] = useState(false);
   const [approvalError, setApprovalError] = useState<string | null>(null);
+  const approvalTriggerRef = useRef<HTMLButtonElement>(null);
+  const conflictKeepLocalRef = useRef<HTMLButtonElement>(null);
+  const conflictReturnRef = useRef<HTMLElement | null>(null);
   const autosave = useDraftAutosave({
     planVersionId: plan.version.id,
     initialLockVersion: plan.version.lockVersion,
     save: saveDraft,
     delayMs: autosaveDelayMs,
   });
+  const previousConflictRef = useRef<typeof autosave.conflict>(null);
+  useEffect(() => {
+    if (autosave.conflict && !previousConflictRef.current) {
+      conflictKeepLocalRef.current?.focus();
+    }
+    previousConflictRef.current = autosave.conflict;
+  }, [autosave.conflict]);
   const viewerCount = usePlanPresence({
     planVersionId: plan.version.id,
     displayName: presenceDisplayName,
@@ -67,6 +104,23 @@ export function PlanningWorkspace({
   const priorityAlert = plan.rows
     .filter((row) => row.severity === "critical" && row.recommendedQty > 0)
     .sort((left, right) => right.recommendedQty - left.recommendedQty)[0];
+  const selectedRow =
+    plan.rows.find((row) => row.planLineId === selectedPlanLineId) ?? null;
+  const activeWorkflowStep = resolvePlanningWorkflowStep(workflowStep);
+  const committedAmount = plan.rows.reduce(
+    (total, row) => total + Number(row.amount),
+    0,
+  );
+  const targetAmount = Number(plan.cycle.targetPurchaseAmount);
+  const remainingBudget = targetAmount - committedAmount;
+  const unresolvedCriticalCount = plan.rows.filter(
+    (row) => row.severity === "critical",
+  ).length;
+  const money = new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: plan.cycle.currencyCode,
+    maximumFractionDigits: 0,
+  });
 
   function updateRow(
     planLineId: string,
@@ -91,6 +145,14 @@ export function PlanningWorkspace({
             ? "warning"
             : "healthy",
     };
+
+    if (
+      typeof document !== "undefined" &&
+      document.activeElement instanceof HTMLElement &&
+      document.activeElement !== document.body
+    ) {
+      conflictReturnRef.current = document.activeElement;
+    }
 
     setPlan((current) => ({
       ...current,
@@ -125,6 +187,8 @@ export function PlanningWorkspace({
   }
 
   function createProposal(row: PlanningRowView) {
+    setSelectedPlanLineId(row.planLineId);
+    setMobileView("detail");
     updateRow(row.planLineId, { qty: row.recommendedQty });
   }
 
@@ -188,6 +252,25 @@ export function PlanningWorkspace({
     }
   }
 
+  function closeApprovalRoute() {
+    setApprovalRoute(null);
+    queueMicrotask(() => approvalTriggerRef.current?.focus());
+  }
+
+  function closeConflict() {
+    autosave.dismissConflict();
+    queueMicrotask(() => {
+      const previous = conflictReturnRef.current;
+      const previousDisabled =
+        previous instanceof HTMLButtonElement && previous.disabled;
+      if (previous?.isConnected && previous !== document.body && !previousDisabled) {
+        previous.focus();
+        return;
+      }
+      document.querySelector<HTMLElement>('[aria-label="Số lượng đặt"]')?.focus();
+    });
+  }
+
   return (
     <div className="planning-workspace">
       <PlanningHeader
@@ -195,42 +278,107 @@ export function PlanningWorkspace({
         saveLabel={saveLabels[autosave.status]}
         viewerCount={viewerCount}
       />
-      <PlanningTabs cycleId={plan.cycle.id} versionId={plan.version.id} />
+      <PlanningWorkflowNav
+        step={activeWorkflowStep}
+        basePath={workflowBasePath ?? `/planning/${plan.cycle.id}`}
+        brandId={workflowBrandId}
+        versionId={plan.version.id}
+      />
       <KpiStrip plan={plan} />
-      <div className="planning-approval-toolbar">
-        <div>
-          <strong>Sẵn sàng chuyển bước?</strong>
-          <span>Hệ thống sẽ hiển thị đúng luồng duyệt đang áp dụng trước khi gửi.</span>
-        </div>
-        <button
-          className="button button--primary"
-          type="button"
-          disabled={!plan.canEdit || approvalLoading}
-          onClick={requestApprovalRoute}
-        >
-          {approvalLoading ? "Đang kiểm tra…" : "Kiểm tra & gửi duyệt"}
-        </button>
-      </div>
-      {approvalError ? (
-        <div className="form-alert form-alert--error" role="alert">
-          {approvalError}
-        </div>
-      ) : null}
-      {priorityAlert ? (
+      {activeWorkflowStep === "products" && priorityAlert ? (
         <StockAlert
           row={priorityAlert}
           canEdit={plan.canEdit}
           onCreateProposal={createProposal}
         />
       ) : null}
-      <div className="planning-workspace__detail">
-        <PlanningGrid
-          rows={plan.rows}
-          canEdit={plan.canEdit}
-          onRowChange={updateRow}
+      {activeWorkflowStep === "products" ? (
+        <div
+          className="planning-workspace__detail"
+          data-planning-view={mobileView}
+        >
+          <PlanningProductList
+            rows={plan.rows}
+            selectedPlanLineId={selectedPlanLineId}
+            onSelect={(planLineId) => {
+              setSelectedPlanLineId(planLineId);
+              setMobileView("detail");
+            }}
+          />
+          <PlanningProductEditor
+            row={selectedRow}
+            canEdit={plan.canEdit}
+            currencyCode={plan.cycle.currencyCode}
+            onChange={updateRow}
+            onApplyRecommendation={createProposal}
+            onBack={() => setMobileView("list")}
+          />
+        </div>
+      ) : null}
+      {activeWorkflowStep === "po" ? (
+        <PoTimeline
+          currencyCode={plan.cycle.currencyCode}
+          batches={[...poBatches]}
         />
-        <PlanningInsights rows={plan.rows} />
-      </div>
+      ) : null}
+      {activeWorkflowStep === "budget" ? (
+        <section className="planning-step-summary" aria-labelledby="planning-budget-title">
+          <p className="section-index">Bước 3</p>
+          <h2 id="planning-budget-title">Ngân sách</h2>
+          <dl className="planning-step-summary__metrics">
+            <div><dt>Đã lên PO</dt><dd>{money.format(committedAmount)}</dd></div>
+            <div><dt>Ngân sách còn lại</dt><dd>{money.format(remainingBudget)}</dd></div>
+          </dl>
+          <p>
+            {remainingBudget < 0
+              ? "Kế hoạch hiện vượt ngân sách mục tiêu; cần điều chỉnh trước khi gửi duyệt."
+              : "Kế hoạch đang trong ngân sách mục tiêu."}
+          </p>
+        </section>
+      ) : null}
+      {activeWorkflowStep === "submit" ? (
+        <section className="planning-submit-summary" aria-labelledby="planning-submit-title">
+          <div>
+            <p className="section-index">Bước 4</p>
+            <h2 id="planning-submit-title">Gửi duyệt kế hoạch</h2>
+            <p>Kiểm tra rủi ro và ngân sách trước khi xem tuyến duyệt đang áp dụng.</p>
+          </div>
+          <dl className="planning-submit-summary__checks">
+            <div>
+              <dt>Sản phẩm khẩn cấp</dt>
+              <dd>{unresolvedCriticalCount} sản phẩm khẩn cấp chưa xử lý</dd>
+            </div>
+            <div>
+              <dt>Ngân sách</dt>
+              <dd>{remainingBudget < 0 ? `Vượt ${money.format(Math.abs(remainingBudget))}` : `Còn lại ${money.format(remainingBudget)}`}</dd>
+            </div>
+            <div>
+              <dt>Luồng duyệt</dt>
+              <dd>Chưa kiểm tra</dd>
+            </div>
+          </dl>
+          <div className="planning-approval-toolbar">
+            <div>
+              <strong>Sẵn sàng gửi duyệt?</strong>
+              <span>Hệ thống sẽ hiển thị đúng luồng duyệt đang áp dụng trước khi gửi.</span>
+            </div>
+            <button
+              ref={approvalTriggerRef}
+              className="button button--primary"
+              type="button"
+              disabled={!plan.canEdit || approvalLoading}
+              onClick={requestApprovalRoute}
+            >
+              {approvalLoading ? "Đang kiểm tra…" : "Kiểm tra & gửi duyệt"}
+            </button>
+          </div>
+        </section>
+      ) : null}
+      {approvalError ? (
+        <div className="form-alert form-alert--error" role="alert">
+          {approvalError}
+        </div>
+      ) : null}
       {autosave.error ? (
         <div className="form-alert form-alert--error" role="alert">
           {autosave.error}
@@ -242,6 +390,32 @@ export function PlanningWorkspace({
           role="dialog"
           aria-modal="true"
           aria-labelledby="planning-conflict-title"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              closeConflict();
+              return;
+            }
+
+            if (event.key === "Tab") {
+              const focusable = Array.from(
+                event.currentTarget.querySelectorAll<HTMLElement>(
+                  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+                ),
+              );
+              if (focusable.length === 0) return;
+              const first = focusable[0];
+              const last = focusable[focusable.length - 1];
+              const active = document.activeElement;
+              if (!event.shiftKey && active === last) {
+                event.preventDefault();
+                first.focus();
+              } else if (event.shiftKey && active === first) {
+                event.preventDefault();
+                last.focus();
+              }
+            }
+          }}
         >
           <div className="planning-conflict__panel">
             <p className="section-index">Cần quyết định</p>
@@ -253,9 +427,10 @@ export function PlanningWorkspace({
             </p>
             <div>
               <button
+                ref={conflictKeepLocalRef}
                 className="button"
                 type="button"
-                onClick={autosave.dismissConflict}
+                onClick={closeConflict}
               >
                 Giữ bản local
               </button>
@@ -274,7 +449,7 @@ export function PlanningWorkspace({
         <SubmitPlanDialog
           open
           route={approvalRoute}
-          onCancel={() => setApprovalRoute(null)}
+          onCancel={closeApprovalRoute}
           onConfirm={confirmApprovalSubmission}
         />
       ) : null}

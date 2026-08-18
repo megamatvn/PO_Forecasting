@@ -5,10 +5,12 @@ import { exportPlanWorkbook } from "@/features/reports/server/export-plan";
 describe("exportPlanWorkbook", () => {
   it("exports canonical SKU and Amount = Qty × Ex Price with metadata", async () => {
     const buffer = await exportPlanWorkbook({
+      brand: { code: "ETX" },
       cycle: {
         id: "cycle-etx",
         code: "ETX-2026",
         name: "ETX Forecast 2026",
+        planningYear: 2026,
         currencyCode: "EUR",
         targetPurchaseAmount: "100000",
       },

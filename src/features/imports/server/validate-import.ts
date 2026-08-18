@@ -46,7 +46,11 @@ export function validateImport(
     }
 
     for (const demand of row.monthlyDemand ?? []) {
-      if (demand.invalid || demand.demandQty < 0) {
+      if (
+        demand.invalid ||
+        demand.demandQty < 0 ||
+        (demand.roundedFrom !== undefined && demand.roundedFrom < 0)
+      ) {
         issues.push(
           issue({
             severity: "error",
@@ -54,6 +58,20 @@ export function validateImport(
             field: `monthlyDemand.${demand.demandMonth}.demandQty`,
             code: "invalid_number",
             message: "Forecast theo tháng phải là số không âm.",
+          }),
+        );
+      }
+
+      if (demand.roundedFrom !== undefined) {
+        issues.push(
+          issue({
+            severity: "warning",
+            rowNumber: row.rowNumber,
+            field: `monthlyDemand.${demand.demandMonth}.demandQty`,
+            code: "fractional_quantity_rounded",
+            message:
+              `Forecast ${demand.demandMonth}: giá trị nguồn ${demand.roundedFrom} ` +
+              `được làm tròn thành ${demand.demandQty} sản phẩm.`,
           }),
         );
       }

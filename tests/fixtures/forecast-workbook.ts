@@ -16,10 +16,30 @@ const products = [
   ["ET-015010", "Sản phẩm 010", 4.0, 20],
 ] as const;
 
-export async function createForecastWorkbookFixture(): Promise<Buffer> {
-  const workbook = new ExcelJS.Workbook();
-  const forecast = workbook.addWorksheet("Forecast 5M");
+interface ForecastWorkbookFixtureOptions {
+  forecastSheetName?: string;
+  additionalForecastSheetNames?: readonly string[];
+}
+
+function populateForecastSheet(forecast: ExcelJS.Worksheet): void {
+  forecast.getCell("C5").value = "No";
   forecast.getCell("D5").value = "Code";
+  forecast.getCell("E5").value = "Product Name";
+  forecast.getCell("F5").value = "Ex Price";
+  forecast.getCell("G5").value = "PO 2026";
+  forecast.getCell("H5").value = "Amount";
+  forecast.getCell("L5").value = "PO #1";
+  forecast.getCell("O5").value = "PO #2";
+  forecast.getCell("S5").value = "Current Stock";
+  forecast.getCell("U5").value = "PO #3";
+  forecast.getCell("X5").value = "PO #4";
+  forecast.getCell("AA5").value = "PO #5";
+  forecast.getCell("AD5").value = "PO #6";
+  [12, 15, 21, 24, 27, 30].forEach((column) => {
+    forecast.getCell(6, column).value = "Qty";
+    forecast.getCell(6, column + 1).value = "FOC";
+    forecast.getCell(6, column + 2).value = "Amount";
+  });
 
   products.forEach(([sku, name, exPrice, currentStock], index) => {
     const row = index + 7;
@@ -40,6 +60,18 @@ export async function createForecastWorkbookFixture(): Promise<Buffer> {
   // Repeated header from the source workbook; the parser must not import the
   // second historical table below the canonical Forecast 5M block.
   forecast.getCell("D21").value = "Code";
+}
+
+export async function createForecastWorkbookFixture(
+  options: ForecastWorkbookFixtureOptions = {},
+): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  const forecast = workbook.addWorksheet(options.forecastSheetName ?? "Forecast 5M");
+  populateForecastSheet(forecast);
+
+  for (const sheetName of options.additionalForecastSheetNames ?? []) {
+    populateForecastSheet(workbook.addWorksheet(sheetName));
+  }
 
   const sales = workbook.addWorksheet("Sales");
   sales.getCell("C55").value = "2. Sale Forecast 2026";

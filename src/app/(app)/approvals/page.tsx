@@ -1,41 +1,23 @@
-import { ApprovalInbox } from "@/features/approvals/components/approval-inbox";
-import { ApprovalReview } from "@/features/approvals/components/approval-review";
-import { loadApprovalInbox } from "@/features/approvals/server/load-approval-inbox";
-import { getCurrentAccess } from "@/features/auth/server/get-current-access";
+import { PageHeader } from "@/components/ui/page-header";
+import { getOrganizationContext } from "@/features/organization/server/get-organization-context";
+import { V2ApprovalWorkCenter } from "@/features/approvals/components/v2-approval-work-center";
+import { loadV2ApprovalInbox } from "@/features/approvals/server/load-approval-inbox";
 
-interface ApprovalsPageProps {
-  searchParams: Promise<{ requestId?: string }>;
-}
-
-export default async function ApprovalsPage({ searchParams }: ApprovalsPageProps) {
-  const [access, query] = await Promise.all([getCurrentAccess(), searchParams]);
-  const requests = access ? await loadApprovalInbox(access) : [];
-  const activeRequest =
-    requests.find((request) => request.id === query.requestId) ?? requests[0];
+export default async function ApprovalsPage() {
+  const access = await getOrganizationContext();
+  const items = access ? await loadV2ApprovalInbox(access) : [];
 
   return (
     <div className="page-shell approvals-page">
-      <header className="page-heading">
-        <div>
-          <p className="eyebrow">Approval Center</p>
-          <h1>Hồ sơ chờ duyệt</h1>
-        </div>
-        <span className="status-badge status-badge--neutral">
-          Snapshot policy bất biến
-        </span>
-      </header>
-      {activeRequest ? (
-        <div className="approvals-layout">
-          <ApprovalInbox requests={requests} activeRequestId={activeRequest.id} />
-          <ApprovalReview request={activeRequest} />
-        </div>
-      ) : (
-        <section className="empty-state">
-          <p className="section-index">Inbox trống</p>
-          <h2>Không có hồ sơ nào trong phạm vi truy cập.</h2>
-          <p>Hồ sơ sẽ xuất hiện sau khi Planner gửi một Draft để duyệt.</p>
-        </section>
-      )}
+      <PageHeader
+        eyebrow="Trung tâm phê duyệt"
+        title="Hồ sơ chờ duyệt"
+        description="Xem nội dung, tuyến duyệt và xử lý các hồ sơ trong phạm vi được giao."
+        context={<span className="status-badge status-badge--neutral">
+          {items.length.toLocaleString("vi-VN")} hồ sơ
+        </span>}
+      />
+      <V2ApprovalWorkCenter items={items} />
     </div>
   );
 }

@@ -119,7 +119,12 @@ from (
     ('90000000-0000-0000-0000-000000000002'::uuid, 'planner@local.test', 'Local Planner'),
     ('90000000-0000-0000-0000-000000000003'::uuid, 'approver1@local.test', 'Local Approver L1'),
     ('90000000-0000-0000-0000-000000000004'::uuid, 'approver2@local.test', 'Local Approver L2'),
-    ('90000000-0000-0000-0000-000000000005'::uuid, 'viewer@local.test', 'Local Viewer')
+    ('90000000-0000-0000-0000-000000000005'::uuid, 'viewer@local.test', 'Local Viewer'),
+    ('91000000-0000-0000-0000-000000000001'::uuid, 'admin@sagen-groupe.com', 'Sagen Administrator'),
+    ('91000000-0000-0000-0000-000000000002'::uuid, 'leader@sagen-groupe.com', 'Sagen Leader'),
+    ('91000000-0000-0000-0000-000000000003'::uuid, 'manager@sagen-groupe.com', 'Sagen Manager'),
+    ('91000000-0000-0000-0000-000000000004'::uuid, 'executive@sagen-groupe.com', 'Sagen Executive'),
+    ('91000000-0000-0000-0000-000000000005'::uuid, 'viewer@sagen-groupe.com', 'Sagen Viewer')
 ) as seed(id, email, display_name)
 on conflict (id) do update
 set email = excluded.email,
@@ -164,7 +169,12 @@ from (
     ('90000000-0000-0000-0000-000000000002'::uuid, 'planner@local.test'),
     ('90000000-0000-0000-0000-000000000003'::uuid, 'approver1@local.test'),
     ('90000000-0000-0000-0000-000000000004'::uuid, 'approver2@local.test'),
-    ('90000000-0000-0000-0000-000000000005'::uuid, 'viewer@local.test')
+    ('90000000-0000-0000-0000-000000000005'::uuid, 'viewer@local.test'),
+    ('91000000-0000-0000-0000-000000000001'::uuid, 'admin@sagen-groupe.com'),
+    ('91000000-0000-0000-0000-000000000002'::uuid, 'leader@sagen-groupe.com'),
+    ('91000000-0000-0000-0000-000000000003'::uuid, 'manager@sagen-groupe.com'),
+    ('91000000-0000-0000-0000-000000000004'::uuid, 'executive@sagen-groupe.com'),
+    ('91000000-0000-0000-0000-000000000005'::uuid, 'viewer@sagen-groupe.com')
 ) as seed(id, email)
 on conflict (provider_id, provider) do update
 set identity_data = excluded.identity_data,
@@ -176,8 +186,31 @@ values
   ('90000000-0000-0000-0000-000000000002', 'Local Planner'),
   ('90000000-0000-0000-0000-000000000003', 'Local Approver L1'),
   ('90000000-0000-0000-0000-000000000004', 'Local Approver L2'),
-  ('90000000-0000-0000-0000-000000000005', 'Local Viewer')
+  ('90000000-0000-0000-0000-000000000005', 'Local Viewer'),
+  ('91000000-0000-0000-0000-000000000001', 'Sagen Administrator'),
+  ('91000000-0000-0000-0000-000000000002', 'Sagen Leader'),
+  ('91000000-0000-0000-0000-000000000003', 'Sagen Manager'),
+  ('91000000-0000-0000-0000-000000000004', 'Sagen Executive'),
+  ('91000000-0000-0000-0000-000000000005', 'Sagen Viewer')
 on conflict (id) do update set display_name = excluded.display_name;
+
+update public.profiles
+set is_active = true,
+    org_tier = case id
+      when '91000000-0000-0000-0000-000000000001'::uuid then 'executive'::public.org_tier
+      when '91000000-0000-0000-0000-000000000002'::uuid then 'leader'::public.org_tier
+      when '91000000-0000-0000-0000-000000000003'::uuid then 'manager'::public.org_tier
+      when '91000000-0000-0000-0000-000000000004'::uuid then 'executive'::public.org_tier
+      when '91000000-0000-0000-0000-000000000005'::uuid then 'employee_viewer'::public.org_tier
+      else org_tier
+    end
+where id in (
+  '91000000-0000-0000-0000-000000000001'::uuid,
+  '91000000-0000-0000-0000-000000000002'::uuid,
+  '91000000-0000-0000-0000-000000000003'::uuid,
+  '91000000-0000-0000-0000-000000000004'::uuid,
+  '91000000-0000-0000-0000-000000000005'::uuid
+);
 
 insert into public.user_roles (user_id, role)
 values
@@ -185,7 +218,49 @@ values
   ('90000000-0000-0000-0000-000000000002', 'planner'),
   ('90000000-0000-0000-0000-000000000003', 'approver_l1'),
   ('90000000-0000-0000-0000-000000000004', 'approver_l2'),
-  ('90000000-0000-0000-0000-000000000005', 'viewer')
+  ('90000000-0000-0000-0000-000000000005', 'viewer'),
+  ('91000000-0000-0000-0000-000000000001', 'administrator'),
+  ('91000000-0000-0000-0000-000000000005', 'viewer')
+on conflict do nothing;
+
+delete from public.reporting_lines
+where user_id in (
+  '91000000-0000-0000-0000-000000000002'::uuid,
+  '91000000-0000-0000-0000-000000000003'::uuid
+);
+
+insert into public.reporting_lines (user_id, supervisor_id)
+values
+  ('91000000-0000-0000-0000-000000000002', '91000000-0000-0000-0000-000000000003'),
+  ('91000000-0000-0000-0000-000000000003', '91000000-0000-0000-0000-000000000004')
+on conflict (user_id) do update
+set supervisor_id = excluded.supervisor_id,
+    updated_at = now();
+
+delete from public.user_capabilities
+where user_id in (
+  '91000000-0000-0000-0000-000000000001'::uuid,
+  '91000000-0000-0000-0000-000000000002'::uuid,
+  '91000000-0000-0000-0000-000000000003'::uuid,
+  '91000000-0000-0000-0000-000000000004'::uuid,
+  '91000000-0000-0000-0000-000000000005'::uuid
+);
+
+insert into public.user_capabilities (user_id, capability)
+values
+  ('91000000-0000-0000-0000-000000000001', 'administer_system'),
+  ('91000000-0000-0000-0000-000000000001', 'create_annual_plan'),
+  ('91000000-0000-0000-0000-000000000001', 'view_approved_plan'),
+  ('91000000-0000-0000-0000-000000000001', 'create_purchase_proposal'),
+  ('91000000-0000-0000-0000-000000000001', 'manage_master_data'),
+  ('91000000-0000-0000-0000-000000000002', 'create_purchase_proposal'),
+  ('91000000-0000-0000-0000-000000000003', 'create_annual_plan'),
+  ('91000000-0000-0000-0000-000000000003', 'view_approved_plan'),
+  ('91000000-0000-0000-0000-000000000003', 'create_purchase_proposal'),
+  ('91000000-0000-0000-0000-000000000004', 'create_annual_plan'),
+  ('91000000-0000-0000-0000-000000000004', 'view_approved_plan'),
+  ('91000000-0000-0000-0000-000000000004', 'create_purchase_proposal'),
+  ('91000000-0000-0000-0000-000000000005', 'view_approved_plan')
 on conflict do nothing;
 
 insert into public.user_brand_access (user_id, brand_id)
@@ -195,8 +270,38 @@ from unnest(array[
   '90000000-0000-0000-0000-000000000002'::uuid,
   '90000000-0000-0000-0000-000000000003'::uuid,
   '90000000-0000-0000-0000-000000000004'::uuid,
-  '90000000-0000-0000-0000-000000000005'::uuid
+  '90000000-0000-0000-0000-000000000005'::uuid,
+  '91000000-0000-0000-0000-000000000001'::uuid,
+  '91000000-0000-0000-0000-000000000002'::uuid,
+  '91000000-0000-0000-0000-000000000003'::uuid,
+  '91000000-0000-0000-0000-000000000004'::uuid,
+  '91000000-0000-0000-0000-000000000005'::uuid
 ]) as user_ids(user_id)
+on conflict do nothing;
+
+delete from public.user_brand_permissions
+where user_id in (
+  '91000000-0000-0000-0000-000000000001'::uuid,
+  '91000000-0000-0000-0000-000000000002'::uuid,
+  '91000000-0000-0000-0000-000000000003'::uuid,
+  '91000000-0000-0000-0000-000000000004'::uuid,
+  '91000000-0000-0000-0000-000000000005'::uuid
+);
+
+insert into public.user_brand_permissions (user_id, brand_id, capability, source_kind, source_user_id)
+values
+  ('91000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'create_annual_plan', 'direct', '91000000-0000-0000-0000-000000000001'),
+  ('91000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'view_approved_plan', 'direct', '91000000-0000-0000-0000-000000000001'),
+  ('91000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'create_purchase_proposal', 'direct', '91000000-0000-0000-0000-000000000001'),
+  ('91000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'manage_master_data', 'direct', '91000000-0000-0000-0000-000000000001'),
+  ('91000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', 'create_purchase_proposal', 'direct', '91000000-0000-0000-0000-000000000002'),
+  ('91000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'create_annual_plan', 'direct', '91000000-0000-0000-0000-000000000003'),
+  ('91000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'view_approved_plan', 'direct', '91000000-0000-0000-0000-000000000003'),
+  ('91000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'create_purchase_proposal', 'direct', '91000000-0000-0000-0000-000000000003'),
+  ('91000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'create_annual_plan', 'direct', '91000000-0000-0000-0000-000000000004'),
+  ('91000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'view_approved_plan', 'direct', '91000000-0000-0000-0000-000000000004'),
+  ('91000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'create_purchase_proposal', 'direct', '91000000-0000-0000-0000-000000000004'),
+  ('91000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', 'view_approved_plan', 'direct', '91000000-0000-0000-0000-000000000005')
 on conflict do nothing;
 
 insert into public.planning_cycles (

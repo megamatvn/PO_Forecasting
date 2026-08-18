@@ -1,15 +1,21 @@
 import ExcelJS from "exceljs";
 import Decimal from "decimal.js";
 import type {
+  ForecastWorkbookReadResult,
   RawMonthlyDemand,
   RawForecastRow,
   RawPurchaseReceipt,
   RawPurchaseWave,
 } from "@/features/imports/domain/import-types";
+import {
+  detectForecastSheets,
+  ForecastSheetNotFoundError,
+  ForecastSheetSelectionRequiredError,
+  isForecastSheetCandidate,
+} from "@/features/imports/server/detect-forecast-sheet";
 
 const MAX_IMPORT_BYTES = 25 * 1024 * 1024;
-const FORECAST_SHEET = "Forecast 5M";
-const FIRST_DATA_ROW = 7;
+const FIRST_DATA_ROW_OFFSET = 2;
 
 const purchaseWaveColumns = [
   { waveNumber: 1, qty: 12, focQty: 13, amount: 14 },
@@ -66,13 +72,28 @@ function scalarValue(value: ExcelJS.CellValue): unknown {
   return value;
 }
 
+function scalarCellValue(cell: ExcelJS.Cell): unknown {
+  const value = cell.value;
+
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    ("formula" in value || "sharedFormula" in value) &&
+    cell.result !== undefined
+  ) {
+    return cell.result;
+  }
+
+  return scalarValue(value);
+}
+
 function textFromCell(cell: ExcelJS.Cell): string {
-  const value = scalarValue(cell.value);
+  const value = scalarCellValue(cell);
   return value === null ? "" : String(value).trim();
 }
 
 function numberFromCell(cell: ExcelJS.Cell): number | null {
-  const value = scalarValue(cell.value);
+  const value = scalarCellValue(cell);
 
   if (value === null || value === "") {
     return null;
@@ -106,7 +127,7 @@ function decimalFromCell(cell: ExcelJS.Cell): string | null {
 }
 
 function isoDateFromCell(cell: ExcelJS.Cell): string | null {
-  const value = scalarValue(cell.value);
+  const value = scalarCellValue(cell);
   if (value === null || value === "") return null;
 
   const date = value instanceof Date
@@ -175,9 +196,15 @@ function readSalesDemand(workbook: ExcelJS.Workbook): Map<string, RawMonthlyDema
     const demand = months.flatMap((month, index) => {
       if (!month) return [];
       const quantity = numberWithValidity(row.getCell(5 + index));
+      const roundedQuantity = Number.isInteger(quantity.value)
+        ? quantity.value
+        : Math.round(quantity.value);
       return [{
         demandMonth: `${year}-${String(month).padStart(2, "0")}-01`,
-        demandQty: quantity.value,
+        demandQty: roundedQuantity,
+        ...(quantity.invalid || roundedQuantity === quantity.value
+          ? {}
+          : { roundedFrom: quantity.value }),
         ...(quantity.invalid ? { invalid: true } : {}),
       }];
     });
@@ -229,31 +256,40 @@ function readPurchaseReceipts(
 
 export async function readForecastWorkbook(
   buffer: Buffer | Uint8Array,
-): Promise<RawForecastRow[]> {
+  sourceSheetName?: string,
+): Promise<ForecastWorkbookReadResult> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(Uint8Array.from(buffer).buffer);
 
-  const sheet = workbook.getWorksheet(FORECAST_SHEET);
-  if (!sheet) {
-    throw new Error(`Không tìm thấy sheet bắt buộc "${FORECAST_SHEET}".`);
+  const diagnostics = detectForecastSheets(workbook);
+  const candidates = diagnostics.filter(isForecastSheetCandidate);
+  let selected;
+
+  if (sourceSheetName) {
+    selected = candidates.find((candidate) => candidate.sheetName === sourceSheetName);
+    if (!selected) throw new ForecastSheetNotFoundError(diagnostics);
+  } else if (candidates.length === 1) {
+    [selected] = candidates;
+  } else if (candidates.length > 1) {
+    throw new ForecastSheetSelectionRequiredError(candidates);
+  } else {
+    throw new ForecastSheetNotFoundError(diagnostics);
   }
 
-  if (textFromCell(sheet.getCell("D5")).toLowerCase() !== "code") {
-    throw new Error("Sheet Forecast 5M không đúng cấu trúc: thiếu cột Code tại D5.");
-  }
+  const sheet = workbook.getWorksheet(selected.sheetName)!;
+  const firstDataRow = selected.headerRow + FIRST_DATA_ROW_OFFSET;
 
   const salesDemand = readSalesDemand(workbook);
   const purchaseReceipts = readPurchaseReceipts(workbook);
   const rows: RawForecastRow[] = [];
 
-  for (let rowNumber = FIRST_DATA_ROW; rowNumber <= sheet.rowCount; rowNumber += 1) {
+  for (let rowNumber = firstDataRow; rowNumber <= sheet.rowCount; rowNumber += 1) {
     const row = sheet.getRow(rowNumber);
     const rawSku = textFromCell(row.getCell(4)).toUpperCase();
     const productName = textFromCell(row.getCell(5));
 
-    // The source workbook contains a second historical/alternative PO table
-    // below the first Forecast 5M table. Its repeated header marks the end of
-    // the canonical import area; importing it would create duplicate SKUs.
+    // A repeated header marks the end of the canonical import area; importing
+    // a following historical table would otherwise create duplicate SKUs.
     if (rows.length > 0 && rawSku === "CODE") break;
 
     if (!rawSku && !productName) {
@@ -275,8 +311,8 @@ export async function readForecastWorkbook(
   }
 
   if (rows.length === 0) {
-    throw new Error("Sheet Forecast 5M không có dòng sản phẩm hợp lệ.");
+    throw new Error(`Sheet "${selected.sheetName}" không có dòng sản phẩm hợp lệ.`);
   }
 
-  return rows;
+  return { rows, sourceSheetName: selected.sheetName };
 }

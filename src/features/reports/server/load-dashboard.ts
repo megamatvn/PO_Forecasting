@@ -3,12 +3,15 @@ import "server-only";
 import type { CurrentAccess } from "@/features/auth/access-types";
 import type { PurchaseBatchStatus } from "@/features/planning/contracts";
 import { loadPlanningWorkspace } from "@/features/planning/server/load-planning-workspace";
+import { buildDashboardInsights } from "@/features/reports/domain/dashboard-insights";
 import type { DashboardView, PoTimelineItem } from "@/features/reports/report-types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 interface LoadDashboardOptions {
   status?: PurchaseBatchStatus | "all";
   days?: number | null;
+  versionId?: string;
+  brandId?: string;
 }
 
 interface BatchRow {
@@ -30,7 +33,12 @@ export async function loadDashboard(
   access: CurrentAccess,
   options: LoadDashboardOptions = {},
 ): Promise<DashboardView | null> {
-  const plan = await loadPlanningWorkspace(cycleIdOrCode, access);
+  const plan = await loadPlanningWorkspace(
+    cycleIdOrCode,
+    access,
+    options.versionId,
+    options.brandId,
+  );
   if (!plan) return null;
 
   const supabase = await createServerSupabaseClient();
@@ -80,16 +88,19 @@ export async function loadDashboard(
   });
   const committedAmount = timeline.reduce((total, batch) => total + batch.amount, 0);
   const targetAmount = Number(plan.cycle.targetPurchaseAmount);
+  const kpis = {
+    targetAmount,
+    committedAmount,
+    gapAmount: targetAmount - committedAmount,
+    criticalCount: plan.rows.filter((row) => row.severity === "critical").length,
+    actionableSkuCount: plan.rows.filter((row) => row.recommendedQty > 0).length,
+    poCount: timeline.length,
+  };
 
   return {
     plan,
     batches: timeline,
-    kpis: {
-      targetAmount,
-      committedAmount,
-      gapAmount: targetAmount - committedAmount,
-      criticalCount: plan.rows.filter((row) => row.severity === "critical").length,
-      poCount: timeline.length,
-    },
+    kpis,
+    insights: buildDashboardInsights(plan.rows, timeline, kpis),
   };
 }

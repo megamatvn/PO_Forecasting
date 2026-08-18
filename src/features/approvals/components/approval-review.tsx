@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   ApprovalDecision,
   ApprovalRequestView,
@@ -28,6 +28,12 @@ export function SubmitPlanDialog({
   onCancel,
   onConfirm,
 }: SubmitPlanDialogProps) {
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (open) cancelButtonRef.current?.focus();
+  }, [open]);
+
   if (!open) return null;
 
   return (
@@ -36,6 +42,33 @@ export function SubmitPlanDialog({
       role="dialog"
       aria-modal="true"
       aria-labelledby="submit-plan-title"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onCancel();
+          return;
+        }
+
+        if (event.key === "Tab") {
+          const focusable = Array.from(
+            event.currentTarget.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
+          );
+          if (focusable.length === 0) return;
+
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          const active = document.activeElement;
+          if (!event.shiftKey && active === last) {
+            event.preventDefault();
+            first.focus();
+          } else if (event.shiftKey && active === first) {
+            event.preventDefault();
+            last.focus();
+          }
+        }
+      }}
     >
       <div className="approval-dialog__panel">
         <p className="section-index">Xác nhận luồng duyệt</p>
@@ -43,10 +76,12 @@ export function SubmitPlanDialog({
           Kế hoạch sẽ được duyệt {route.levels} cấp
         </h2>
         <div className="approval-route-visual" aria-label="Thứ tự người duyệt">
-          <span>Planner</span>
+          <span>Người lập kế hoạch</span>
           <b aria-hidden="true">→</b>
           <strong>
-            {route.levels === 2 ? "Manager → CFO/CEO" : "Manager"}
+            {route.levels === 2
+              ? "Quản lý nhãn hàng → Ban điều hành"
+              : "Quản lý nhãn hàng"}
           </strong>
         </div>
         <p>{routeReasons[route.reason]}</p>
@@ -55,7 +90,7 @@ export function SubmitPlanDialog({
           tác động hồ sơ đang duyệt.
         </p>
         <div className="approval-dialog__actions">
-          <button className="button" type="button" onClick={onCancel}>
+          <button ref={cancelButtonRef} className="button" type="button" onClick={onCancel}>
             Quay lại kiểm tra
           </button>
           <button className="button button--primary" type="button" onClick={onConfirm}>
@@ -79,6 +114,19 @@ const routingLabels = {
   exception: "Có ngoại lệ escalated",
 } as const;
 
+const statusLabels = {
+  pending_l1: "Chờ cấp 1",
+  pending_l2: "Chờ cấp 2",
+  approved: "Đã duyệt",
+  changes_requested: "Yêu cầu sửa",
+} as const;
+
+const exceptionLabelMap: Record<string, string> = {
+  criticalShortage: "Thiếu hàng critical",
+  budgetExceeded: "Vượt ngân sách",
+  newSupplier: "Nhà cung cấp mới",
+};
+
 export function ApprovalReview({ request, onDecision }: ApprovalReviewProps) {
   const [pendingAction, setPendingAction] = useState<ApprovalDecision["action"] | null>(
     null,
@@ -88,7 +136,7 @@ export function ApprovalReview({ request, onDecision }: ApprovalReviewProps) {
   const [error, setError] = useState<string | null>(null);
   const exceptionLabels = Object.entries(request.exceptionFlags)
     .filter(([, enabled]) => enabled)
-    .map(([name]) => name);
+    .map(([name]) => exceptionLabelMap[name] ?? name);
 
   async function submitDecision(decision: ApprovalDecision) {
     if (onDecision) return onDecision(decision);
@@ -127,7 +175,7 @@ export function ApprovalReview({ request, onDecision }: ApprovalReviewProps) {
       <header className="approval-review__header">
         <div>
           <p className="eyebrow">{request.cycleCode} · Hồ sơ duyệt</p>
-          <h1>Version {request.versionNumber}</h1>
+          <h1>Phiên bản {request.versionNumber}</h1>
           <p>
             Gửi bởi {request.submittedBy} ·{" "}
             {new Intl.DateTimeFormat("vi-VN", {
@@ -142,8 +190,11 @@ export function ApprovalReview({ request, onDecision }: ApprovalReviewProps) {
         </div>
         <div>
           <span className="status-badge status-badge--review">
-            Cấp {request.currentLevel}/{request.requiredLevels}
+            {statusLabels[request.status]}
           </span>
+          <strong className="approval-review__level">
+            Cấp duyệt {request.currentLevel}/{request.requiredLevels}
+          </strong>
           <small>{routingLabels[request.routingReason]}</small>
         </div>
       </header>
@@ -167,7 +218,7 @@ export function ApprovalReview({ request, onDecision }: ApprovalReviewProps) {
           <strong>{request.shortageImpact.toLocaleString("vi-VN")}</strong>
         </article>
         <article>
-          <span>Critical</span>
+          <span>Khẩn cấp</span>
           <strong>{request.criticalCount.toLocaleString("vi-VN")}</strong>
         </article>
       </section>
@@ -180,8 +231,8 @@ export function ApprovalReview({ request, onDecision }: ApprovalReviewProps) {
       ) : null}
 
       <VersionDiff
-        fromLabel={`Version ${Math.max(1, request.versionNumber - 1)}`}
-        toLabel={`Version ${request.versionNumber}`}
+        fromLabel={`Phiên bản ${Math.max(1, request.versionNumber - 1)}`}
+        toLabel={`Phiên bản ${request.versionNumber}`}
         diffs={request.diffs}
       />
 

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(18);
+select plan(21);
 
 select has_table('public', 'approval_policies', 'approval policies exist');
 select has_table('public', 'approval_policy_brands', 'brand policy assignments exist');
@@ -266,6 +266,56 @@ select throws_ok(
   '42501',
   'approval_role_required',
   'a planner cannot execute an approval step'
+);
+
+reset role;
+
+insert into auth.users (id)
+values ('90000000-0000-0000-0000-000000000098');
+update public.profiles
+set display_name = 'Administrator approval override'
+where id = '90000000-0000-0000-0000-000000000098';
+insert into public.user_roles (user_id, role)
+values ('90000000-0000-0000-0000-000000000098', 'administrator');
+insert into public.user_brand_access (user_id, brand_id)
+values (
+  '90000000-0000-0000-0000-000000000098',
+  '10000000-0000-0000-0000-000000000001'
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claim.sub',
+  '90000000-0000-0000-0000-000000000098',
+  true
+);
+
+select lives_ok(
+  $$
+    select public.approve_step(
+      (select id from public.approval_requests where plan_version_id = '41000000-0000-0000-0000-000000000073'),
+      '72000000-0000-0000-0000-000000000074'::uuid,
+      'Administrator approved L1'
+    )
+  $$,
+  'an administrator can execute an L1 approval step'
+);
+
+select lives_ok(
+  $$
+    select public.approve_step(
+      (select id from public.approval_requests where plan_version_id = '41000000-0000-0000-0000-000000000073'),
+      '72000000-0000-0000-0000-000000000075'::uuid,
+      'Administrator approved L2'
+    )
+  $$,
+  'an administrator can execute an L2 approval step'
+);
+
+select is(
+  (select status::text from public.plan_versions where id = '41000000-0000-0000-0000-000000000073'),
+  'approved',
+  'administrator approval finalizes the two-level request'
 );
 
 reset role;

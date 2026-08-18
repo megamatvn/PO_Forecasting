@@ -8,6 +8,21 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("LoginForm", () => {
+  it("appends the Sagen email domain when the user enters only a prefix", async () => {
+    const authenticate = vi.fn().mockResolvedValue({ error: null });
+    const user = userEvent.setup();
+    render(<LoginForm authenticate={authenticate} onSignedIn={vi.fn()} />);
+
+    await user.type(screen.getByLabelText("Email hoặc tiền tố email"), " admin ");
+    await user.type(screen.getByLabelText("Mật khẩu"), "secret-password");
+    await user.click(screen.getByRole("button", { name: "Đăng nhập" }));
+
+    expect(authenticate).toHaveBeenCalledWith({
+      email: "admin@sagen-groupe.com",
+      password: "secret-password",
+    });
+  });
+
   it("signs in with email/password and continues to the app", async () => {
     const authenticate = vi.fn().mockResolvedValue({ error: null });
     const onSignedIn = vi.fn();
@@ -16,7 +31,7 @@ describe("LoginForm", () => {
       <LoginForm authenticate={authenticate} onSignedIn={onSignedIn} />,
     );
 
-    await user.type(screen.getByLabelText("Email"), "planner@sagen.vn");
+    await user.type(screen.getByLabelText("Email hoặc tiền tố email"), "planner@sagen.vn");
     await user.type(screen.getByLabelText("Mật khẩu"), "secret-password");
     await user.click(screen.getByRole("button", { name: "Đăng nhập" }));
 
@@ -34,7 +49,7 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
     render(<LoginForm authenticate={authenticate} onSignedIn={vi.fn()} />);
 
-    await user.type(screen.getByLabelText("Email"), "viewer@sagen.vn");
+    await user.type(screen.getByLabelText("Email hoặc tiền tố email"), "viewer@sagen.vn");
     await user.type(screen.getByLabelText("Mật khẩu"), "wrong-password");
     await user.click(screen.getByRole("button", { name: "Đăng nhập" }));
 

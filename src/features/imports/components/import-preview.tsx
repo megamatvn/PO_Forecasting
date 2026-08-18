@@ -7,6 +7,8 @@ interface ImportPreviewProps {
   warningsConfirmed: boolean;
   canCommit: boolean;
   isCommitting: boolean;
+  fileName?: string | null;
+  brandLabel?: string;
   onCommit(): void;
   onWarningsConfirmedChange(value: boolean): void;
 }
@@ -17,6 +19,8 @@ export function ImportPreview({
   warningsConfirmed,
   canCommit,
   isCommitting,
+  fileName,
+  brandLabel,
   onCommit,
   onWarningsConfirmedChange,
 }: ImportPreviewProps) {
@@ -65,6 +69,8 @@ export function ImportPreview({
       emptyCopy: "Không có dòng lỗi bị bỏ qua.",
     },
   ] as const;
+  const sourceSheetName = preview.sourceSheetName ?? "Không xác định";
+  const detectedYear = sourceSheetName.match(/20\d{2}/)?.[0] ?? null;
 
   return (
     <section className="import-preview" aria-labelledby="import-preview-title">
@@ -77,6 +83,31 @@ export function ImportPreview({
           {preview.rows.length} dòng hợp lệ
         </span>
       </header>
+
+      <dl className="import-preview__source" aria-label="Thông tin nguồn">
+        {fileName ? (
+          <div>
+            <dt>File nguồn</dt>
+            <dd>{fileName}</dd>
+          </div>
+        ) : null}
+        {brandLabel ? (
+          <div>
+            <dt>Nhãn hàng</dt>
+            <dd>{brandLabel}</dd>
+          </div>
+        ) : null}
+        <div>
+          <dt>Trang tính nguồn</dt>
+          <dd>{sourceSheetName}</dd>
+        </div>
+        {(preview.planningYear?.toString() ?? detectedYear) ? (
+          <div>
+            <dt>Năm nhận diện</dt>
+            <dd>{preview.planningYear ?? detectedYear}</dd>
+          </div>
+        ) : null}
+      </dl>
 
       <div className="import-diff-grid">
         {diffGroups.map((group) => (
@@ -123,7 +154,7 @@ export function ImportPreview({
           <span>
             <strong>Tôi đã kiểm tra các cảnh báo</strong>
             <small>
-              Amount sẽ luôn được hệ thống tính lại theo Qty × Ex Price.
+              Thành tiền luôn được hệ thống tính lại theo Số lượng × Đơn giá xuất xưởng.
             </small>
           </span>
         </label>
@@ -137,7 +168,7 @@ export function ImportPreview({
           disabled={!canCommit}
           onClick={onCommit}
         >
-          {isCommitting ? "Đang hoàn tất…" : "Xác nhận import"}
+          {isCommitting ? "Đang hoàn tất…" : "Xác nhận nhập dữ liệu"}
         </button>
       </div>
     </section>

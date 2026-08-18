@@ -2,6 +2,10 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { buildImportPreview } from "@/features/imports/server/build-preview";
+import {
+  ForecastSheetNotFoundError,
+  ForecastSheetSelectionRequiredError,
+} from "@/features/imports/server/detect-forecast-sheet";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const IMPORT_BUCKET = "po-forecast-imports";
@@ -9,9 +13,14 @@ const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const brandIdSchema = z.string().regex(UUID_PATTERN);
 
-function errorResponse(status: number, code: string, message: string) {
+function errorResponse(
+  status: number,
+  code: string,
+  message: string,
+  extra: Record<string, unknown> = {},
+) {
   return NextResponse.json(
-    { code, message, correlationId: randomUUID() },
+    { code, message, ...extra, correlationId: randomUUID() },
     { status },
   );
 }
@@ -45,8 +54,7 @@ function isUserFacingWorkbookError(error: unknown): error is Error {
       "Không hỗ trợ",
       "Chỉ hỗ trợ",
       "Kích thước",
-      "Không tìm thấy sheet",
-      "Sheet Forecast 5M",
+      "Không nhận diện được sheet kế hoạch",
     ].some((prefix) => error.message.startsWith(prefix))
   );
 }
@@ -62,6 +70,10 @@ export async function POST(request: Request) {
 
   const brandIdResult = brandIdSchema.safeParse(formData.get("brandId"));
   const fileValue = formData.get("file");
+  const sourceSheetNameValue = formData.get("sourceSheetName");
+  const sourceSheetName = typeof sourceSheetNameValue === "string" && sourceSheetNameValue.trim()
+    ? sourceSheetNameValue.trim()
+    : undefined;
 
   if (!brandIdResult.success || !isUploadedFile(fileValue)) {
     return errorResponse(
@@ -99,7 +111,7 @@ export async function POST(request: Request) {
     return errorResponse(
       403,
       "forbidden",
-      "Bạn không có quyền import dữ liệu cho nhãn hàng này.",
+      "Bạn không có quyền nhập dữ liệu cho nhãn hàng này.",
     );
   }
 
@@ -155,10 +167,21 @@ export async function POST(request: Request) {
     preview = await buildImportPreview({
       buffer,
       fileName: file.name,
+      sourceSheetName,
       aliases: aliasMap,
       knownCanonicalSkus: new Set(canonicalSkuByProductId.values()),
     });
   } catch (error) {
+    if (error instanceof ForecastSheetSelectionRequiredError) {
+      return errorResponse(409, "sheet_selection_required", error.message, {
+        candidates: error.candidates,
+      });
+    }
+    if (error instanceof ForecastSheetNotFoundError) {
+      return errorResponse(422, "invalid_workbook", error.message, {
+        diagnostics: error.diagnostics,
+      });
+    }
     if (isUserFacingWorkbookError(error)) {
       return errorResponse(422, "invalid_workbook", error.message);
     }
@@ -181,7 +204,7 @@ export async function POST(request: Request) {
     return errorResponse(
       500,
       "duplicate_check_failed",
-      "Không thể kiểm tra lịch sử import.",
+      "Không thể kiểm tra lịch sử nhập dữ liệu.",
     );
   }
 
@@ -189,7 +212,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         code: "duplicate_import",
-        message: "File này đã được import trước đó.",
+        message: "File này đã được nhập trước đó.",
         batchId: existingBatch.id,
         status: existingBatch.status,
       },
@@ -222,6 +245,7 @@ export async function POST(request: Request) {
       p_file_size: buffer.byteLength,
       p_storage_path: storagePath,
       p_checksum: preview.checksum,
+      p_source_sheet_name: preview.sourceSheetName,
       p_rows: preview.rows,
       p_issues: preview.issues,
     },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { BrandAccess } from "@/features/auth/access-types";
 import type { AppRole } from "@/features/auth/permissions";
 
@@ -25,18 +25,75 @@ interface UserAccessManagerProps {
   onSave?(draft: UserAccessDraft): Promise<void>;
 }
 
-const roleOptions: { value: AppRole; label: string; description: string }[] = [
-  { value: "administrator", label: "Administrator", description: "Cấu hình người dùng, import và chính sách" },
-  { value: "planner", label: "Planner", description: "Lập và gửi kế hoạch" },
-  { value: "approver_l1", label: "Approver L1", description: "Duyệt nghiệp vụ cấp 1" },
-  { value: "approver_l2", label: "Approver L2", description: "Phê duyệt cuối" },
-  { value: "viewer", label: "Viewer", description: "Chỉ xem, export và audit" },
-];
+const rolePresentation: Record<AppRole, { label: string; description: string }> = {
+  administrator: {
+    label: "Quản trị hệ thống",
+    description: "Quản lý người dùng, dữ liệu và chính sách",
+  },
+  planner: {
+    label: "Lập kế hoạch",
+    description: "Lập và gửi kế hoạch mua hàng",
+  },
+  approver_l1: {
+    label: "Duyệt cấp 1",
+    description: "Duyệt nghiệp vụ",
+  },
+  approver_l2: {
+    label: "Duyệt cấp 2",
+    description: "Phê duyệt cuối",
+  },
+  viewer: {
+    label: "Chỉ xem",
+    description: "Xem, xuất báo cáo và kiểm tra lịch sử",
+  },
+};
+
+const roleOptions = (Object.entries(rolePresentation) as Array<
+  [AppRole, (typeof rolePresentation)[AppRole]]
+>).map(([value, presentation]) => ({ value, ...presentation }));
+
+function sameAccess(left: ManagedUserAccess, right: ManagedUserAccess) {
+  return (
+    left.id === right.id &&
+    left.displayName === right.displayName &&
+    left.isActive === right.isActive &&
+    left.roles.length === right.roles.length &&
+    left.roles.every((role) => right.roles.includes(role)) &&
+    left.brandIds.length === right.brandIds.length &&
+    left.brandIds.every((brandId) => right.brandIds.includes(brandId))
+  );
+}
 
 export function UserAccessManager({ users, brands, onSave }: UserAccessManagerProps) {
+  const canonicalOverridesRef = useRef(new Map<string, ManagedUserAccess>());
   const [managedUsers, setManagedUsers] = useState(users);
+  useEffect(() => {
+    setManagedUsers(
+      users.map((incoming) => {
+        const canonical = canonicalOverridesRef.current.get(incoming.id);
+        if (!canonical) return incoming;
+        if (sameAccess(incoming, canonical)) {
+          canonicalOverridesRef.current.delete(incoming.id);
+          return incoming;
+        }
+        return canonical;
+      }),
+    );
+  }, [users]);
+
   const [selectedId, setSelectedId] = useState(users[0]?.id ?? "");
   const selected = managedUsers.find((user) => user.id === selectedId) ?? managedUsers[0];
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const visibleUsers = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase("vi-VN");
+    return managedUsers.filter((user) => {
+      const matchesSearch = !query || user.displayName.toLocaleLowerCase("vi-VN").includes(query);
+      const matchesStatus =
+        statusFilter === "all" || (statusFilter === "active" ? user.isActive : !user.isActive);
+      return matchesSearch && matchesStatus;
+    });
+  }, [managedUsers, search, statusFilter]);
   const [draft, setDraft] = useState<UserAccessDraft | null>(
     selected
       ? { userId: selected.id, roles: selected.roles, brandIds: selected.brandIds, isActive: selected.isActive }
@@ -72,15 +129,22 @@ export function UserAccessManager({ users, brands, onSave }: UserAccessManagerPr
         if (!response.ok) throw new Error("user_access_save_failed");
       }
       setManagedUsers((current) => current.map((user) =>
-        user.id === draft.userId
-          ? {
-              ...user,
-              roles: draft.roles,
-              brandIds: draft.brandIds,
-              isActive: draft.isActive,
-            }
-          : user,
+        user.id === draft.userId ? {
+          ...user,
+          roles: [...draft.roles],
+          brandIds: [...draft.brandIds],
+          isActive: draft.isActive,
+        } : user,
       ));
+      const currentUser = managedUsers.find((user) => user.id === draft.userId);
+      if (currentUser) {
+        canonicalOverridesRef.current.set(draft.userId, {
+          ...currentUser,
+          roles: [...draft.roles],
+          brandIds: [...draft.brandIds],
+          isActive: draft.isActive,
+        });
+      }
       setMessage("Đã lưu quyền truy cập.");
     } catch {
       setMessage("Không thể lưu quyền. Cấu hình cũ chưa bị thay đổi.");
@@ -96,22 +160,57 @@ export function UserAccessManager({ users, brands, onSave }: UserAccessManagerPr
   return (
     <div className="user-access-layout">
       <aside className="user-access-list" aria-label="Danh sách người dùng">
-        {managedUsers.map((user) => (
+        <div className="user-access-list__filters">
+          <label>
+            Tìm người dùng
+            <input
+              type="search"
+              aria-label="Tìm người dùng"
+              placeholder="Tên hiển thị"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </label>
+          <label>
+            Trạng thái tài khoản
+            <select
+              aria-label="Trạng thái tài khoản"
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value as "all" | "active" | "inactive")}
+            >
+              <option value="all">Tất cả tài khoản</option>
+              <option value="active">Đang hoạt động</option>
+              <option value="inactive">Đã tạm khóa</option>
+            </select>
+          </label>
+          <span className="user-access-list__count" role="status">
+            {visibleUsers.length.toLocaleString("vi-VN")} người dùng
+          </span>
+        </div>
+        {visibleUsers.map((user) => (
           <button
             key={user.id}
             type="button"
             className={user.id === selectedId ? "is-active" : ""}
+            aria-current={user.id === selectedId ? "true" : undefined}
             onClick={() => selectUser(user.id)}
           >
             <strong>{user.displayName}</strong>
-            <span>{user.roles.length} vai trò · {user.brandIds.length} nhãn hàng</span>
+            <span>{user.isActive ? "Đang hoạt động" : "Đã tạm khóa"} · {user.roles.length} vai trò · {user.brandIds.length} nhãn hàng</span>
           </button>
         ))}
+        {visibleUsers.length === 0 ? <p className="user-access-list__empty">Không có người dùng phù hợp.</p> : null}
       </aside>
       <section className="user-access-editor">
-        <header><p className="section-index">Quyền hiệu lực</p><h2>{selected?.displayName}</h2></header>
+        <header>
+          <p className="section-index">Quyền hiệu lực</p>
+          <h2>{selected?.displayName}</h2>
+          <span className={`user-access-status ${selected?.isActive ? "is-active" : ""}`}>
+            {selected?.isActive ? "Đang hoạt động" : "Đã tạm khóa"}
+          </span>
+        </header>
         <fieldset>
-          <legend>Vai trò</legend>
+          <legend>Vai trò ({draft.roles.length})</legend>
           <div className="user-access-options">
             {roleOptions.map((role) => (
               <label key={role.value}>
@@ -132,7 +231,7 @@ export function UserAccessManager({ users, brands, onSave }: UserAccessManagerPr
           </div>
         </fieldset>
         <fieldset>
-          <legend>Nhãn hàng</legend>
+          <legend>Nhãn hàng ({draft.brandIds.length})</legend>
           <div className="user-access-options user-access-options--brands">
             {brands.map((brand) => (
               <label key={brand.id}>

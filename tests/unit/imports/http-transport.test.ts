@@ -6,7 +6,7 @@ describe("httpImportTransport", () => {
     vi.unstubAllGlobals();
   });
 
-  it("sends the selected workbook and brand to the preview endpoint", async () => {
+  it("sends an optional selected source sheet with the workbook and brand", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -25,6 +25,7 @@ describe("httpImportTransport", () => {
     await httpImportTransport.preview(
       file,
       "10000000-0000-0000-0000-000000000001",
+      "Kế hoạch ETX 2026",
     );
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -35,6 +36,7 @@ describe("httpImportTransport", () => {
     expect((init.body as FormData).get("brandId")).toBe(
       "10000000-0000-0000-0000-000000000001",
     );
+    expect((init.body as FormData).get("sourceSheetName")).toBe("Kế hoạch ETX 2026");
   });
 
   it("sends retry-safe commit metadata as JSON", async () => {
@@ -69,5 +71,38 @@ describe("httpImportTransport", () => {
         }),
       }),
     );
+  });
+
+  it("preserves candidate diagnostics for the sheet picker", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          code: "sheet_selection_required",
+          message: "Có nhiều sheet kế hoạch phù hợp.",
+          candidates: [
+            {
+              sheetName: "Kế hoạch ETX 2026",
+              headerRow: 5,
+              score: 7,
+              missingHeaders: [],
+            },
+          ],
+          correlationId: "corr-1",
+        }),
+        { status: 422, headers: { "content-type": "application/json" } },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      httpImportTransport.preview(
+        new File(["workbook"], "forecast.xlsx"),
+        "10000000-0000-0000-0000-000000000001",
+      ),
+    ).rejects.toMatchObject({
+      code: "sheet_selection_required",
+      candidates: [expect.objectContaining({ sheetName: "Kế hoạch ETX 2026" })],
+      correlationId: "corr-1",
+    });
   });
 });

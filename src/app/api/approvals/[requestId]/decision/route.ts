@@ -74,7 +74,10 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json({ status });
   }
 
-  if (error?.message.includes("approval_step_forbidden")) {
+  if (
+    error?.message.includes("approval_role_required") ||
+    error?.message.includes("approval_step_forbidden")
+  ) {
     return errorResponse(
       403,
       "forbidden",

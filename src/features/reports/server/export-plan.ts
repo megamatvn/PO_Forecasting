@@ -8,7 +8,7 @@ export async function exportPlanWorkbook(
   plan: PlanningWorkspaceView,
 ): Promise<ArrayBuffer> {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Sagen PO Forecasting";
+  workbook.creator = "Sagen · Lập kế hoạch mua hàng";
   workbook.created = new Date();
   workbook.modified = new Date();
   workbook.calcProperties.fullCalcOnLoad = true;
@@ -80,7 +80,7 @@ export async function exportPlanWorkbook(
     { field: "Version ID", value: plan.version.id },
     { field: "Cập nhật lúc", value: plan.version.updatedAt },
     { field: "Quy tắc Amount", value: "Qty × Ex Price (không gồm FOC)" },
-    { field: "Nguồn", value: "Sagen PO Forecasting · canonical database" },
+    { field: "Nguồn", value: "Sagen · Dữ liệu kế hoạch chuẩn" },
   ]);
   metadata.getRow(1).eachCell((cell) => {
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: headerFill } };

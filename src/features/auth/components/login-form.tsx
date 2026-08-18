@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { normalizeLoginEmail } from "@/features/auth/email";
 
 interface Credentials {
   email: string;
@@ -39,7 +40,7 @@ export function LoginForm({
 
     const formData = new FormData(event.currentTarget);
     const result = await authenticate({
-      email: String(formData.get("email") ?? "").trim(),
+      email: normalizeLoginEmail(String(formData.get("email") ?? "")),
       password: String(formData.get("password") ?? ""),
     });
 
@@ -63,13 +64,14 @@ export function LoginForm({
   return (
     <form className="login-form" onSubmit={handleSubmit} aria-busy={isSubmitting}>
       <div className="field-group">
-        <label htmlFor="login-email">Email</label>
+        <label htmlFor="login-email">Email hoặc tiền tố email</label>
         <input
           id="login-email"
           name="email"
-          type="email"
+          type="text"
+          inputMode="email"
           autoComplete="email"
-          placeholder="ten.nguoidung@sagen.vn"
+          placeholder="admin"
           required
         />
       </div>

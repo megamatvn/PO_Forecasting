@@ -13,6 +13,12 @@ const statusLabels = {
   changes_requested: "Yêu cầu sửa",
 } as const;
 
+const exceptionLabels: Record<string, string> = {
+  criticalShortage: "Thiếu hàng critical",
+  budgetExceeded: "Vượt ngân sách",
+  newSupplier: "Nhà cung cấp mới",
+};
+
 export function ApprovalInbox({
   requests,
   activeRequestId,
@@ -35,22 +41,33 @@ export function ApprovalInbox({
       </header>
       <nav aria-label="Danh sách hồ sơ">
         {prioritized.map((request) => {
-          const hasException = Object.values(request.exceptionFlags).some(Boolean);
+          const enabledExceptions = Object.entries(request.exceptionFlags)
+            .filter(([, enabled]) => enabled)
+            .map(([name]) => exceptionLabels[name] ?? name);
+          const hasException = enabledExceptions.length > 0;
+          const isActive = request.id === activeRequestId;
           return (
             <Link
               key={request.id}
               href={`/approvals?requestId=${request.id}`}
-              className={request.id === activeRequestId ? "is-active" : undefined}
+              className={isActive ? "is-active" : undefined}
+              aria-current={isActive ? "page" : undefined}
             >
               <div>
                 <strong>{request.cycleCode}</strong>
-                <span>Version {request.versionNumber}</span>
+                <span>Phiên bản {request.versionNumber}</span>
               </div>
               <small>{statusLabels[request.status]}</small>
+              <span className="approval-inbox__level">
+                Cấp duyệt {request.currentLevel}/{request.requiredLevels}
+              </span>
               <p>
                 {Number(request.planAmount).toLocaleString("vi-VN")} {request.currencyCode}
               </p>
-              {hasException ? <b>Ngoại lệ</b> : null}
+              {isActive ? <span className="approval-inbox__current">Đang xem</span> : null}
+              {hasException ? (
+                <b aria-label="Ngoại lệ">{enabledExceptions.join(" · ")}</b>
+              ) : null}
             </Link>
           );
         })}

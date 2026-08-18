@@ -83,7 +83,7 @@ export async function POST(request: Request, context: RouteContext) {
     return errorResponse(
       422,
       "missing_ex_price",
-      "Không thể gửi duyệt vì kế hoạch còn Qty chưa có Ex Price.",
+      "Không thể gửi duyệt vì vẫn còn sản phẩm có số lượng nhưng chưa có đơn giá xuất xưởng.",
     );
   }
 

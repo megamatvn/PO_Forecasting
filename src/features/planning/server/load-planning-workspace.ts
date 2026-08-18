@@ -17,6 +17,7 @@ interface CycleRow {
   brand_id: string;
   code: string;
   name: string;
+  planning_year: number;
   currency_code: string;
   target_purchase_amount: string;
 }
@@ -88,20 +89,29 @@ export async function loadPlanningWorkspace(
   cycleIdOrCode: string,
   access: CurrentAccess,
   versionId?: string,
+  brandId?: string,
 ): Promise<PlanningWorkspaceView | null> {
   const supabase = await createServerSupabaseClient();
   let cycleQuery = supabase
     .from("planning_cycles")
-    .select("id, brand_id, code, name, currency_code, target_purchase_amount")
+    .select(
+      "id, brand_id, code, name, planning_year, currency_code, target_purchase_amount",
+    )
     .eq("is_active", true);
 
   cycleQuery = UUID_PATTERN.test(cycleIdOrCode)
     ? cycleQuery.eq("id", cycleIdOrCode)
     : cycleQuery.eq("code", cycleIdOrCode.toUpperCase());
 
+  if (brandId) {
+    cycleQuery = cycleQuery.eq("brand_id", brandId);
+  }
+
   const { data: cycleData, error: cycleError } = await cycleQuery.maybeSingle();
   if (cycleError || !cycleData) return null;
   const cycle = cycleData as CycleRow;
+  const brand = access.brands.find((item) => item.id === cycle.brand_id);
+  if (!brand) return null;
 
   const { data: versionData, error: versionError } = await supabase
     .from("plan_versions")
@@ -267,10 +277,14 @@ export async function loadPlanningWorkspace(
   });
 
   return {
+    brand: {
+      code: brand.code,
+    },
     cycle: {
       id: cycle.id,
       code: cycle.code,
       name: cycle.name,
+      planningYear: cycle.planning_year,
       currencyCode: cycle.currency_code,
       targetPurchaseAmount: cycle.target_purchase_amount,
     },

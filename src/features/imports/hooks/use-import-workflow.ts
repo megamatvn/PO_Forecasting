@@ -2,12 +2,20 @@
 
 import { useRef, useState } from "react";
 import type {
+  ForecastSheetCandidate,
   ImportIssue,
   ImportPreview,
 } from "@/features/imports/domain/import-types";
 
 export interface ImportPreviewResponse extends ImportPreview {
   batchId: string;
+}
+
+export interface ImportSheetSelectionRequiredError {
+  code: "sheet_selection_required";
+  message: string;
+  candidates: ForecastSheetCandidate[];
+  correlationId?: string;
 }
 
 export interface ImportCommitResponse {
@@ -17,7 +25,11 @@ export interface ImportCommitResponse {
 }
 
 export interface ImportWorkflowTransport {
-  preview(file: File, brandId: string): Promise<ImportPreviewResponse>;
+  preview(
+    file: File,
+    brandId: string,
+    sourceSheetName?: string,
+  ): Promise<ImportPreviewResponse>;
   commit(input: {
     batchId: string;
     idempotencyKey: string;
@@ -26,20 +38,22 @@ export interface ImportWorkflowTransport {
 }
 
 async function readJsonResponse<T>(response: Response): Promise<T> {
-  const body = (await response.json()) as { message?: string } & T;
+  const body = (await response.json()) as { message?: string; code?: string } & T;
 
   if (!response.ok) {
-    throw new Error(body.message || "Yêu cầu import không thành công.");
+    if (body.code === "sheet_selection_required") throw body;
+    throw new Error(body.message || "Yêu cầu nhập dữ liệu không thành công.");
   }
 
   return body;
 }
 
 export const httpImportTransport: ImportWorkflowTransport = {
-  async preview(file, brandId) {
+  async preview(file, brandId, sourceSheetName) {
     const formData = new FormData();
     formData.set("brandId", brandId);
     formData.set("file", file);
+    if (sourceSheetName) formData.set("sourceSheetName", sourceSheetName);
 
     const response = await fetch("/api/imports/preview", {
       method: "POST",
@@ -62,6 +76,7 @@ export const httpImportTransport: ImportWorkflowTransport = {
 export type ImportWorkflowState =
   | "idle"
   | "uploading"
+  | "selecting_sheet"
   | "preview"
   | "committing"
   | "success"
@@ -81,6 +96,7 @@ export function useImportWorkflow({
   const [preview, setPreview] = useState<ImportPreviewResponse | null>(null);
   const [result, setResult] = useState<ImportCommitResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sheetSelection, setSheetSelection] = useState<ImportSheetSelectionRequiredError | null>(null);
   const [warningsConfirmed, setWarningsConfirmed] = useState(false);
 
   const hasWarnings =
@@ -90,21 +106,29 @@ export function useImportWorkflow({
     preview?.issues.some((issue: ImportIssue) => issue.severity === "error") ??
     false;
 
-  async function selectFile(file: File) {
+  async function selectFile(file: File, sourceSheetName?: string): Promise<boolean> {
     setState("uploading");
     setError(null);
+    setSheetSelection(null);
     setPreview(null);
     setResult(null);
     setWarningsConfirmed(false);
     commitKeyRef.current = null;
 
     try {
-      const result = await transport.preview(file, brandId);
+      const result = await transport.preview(file, brandId, sourceSheetName);
       setPreview(result);
       setState("preview");
-    } catch {
+      return true;
+    } catch (caught) {
+      if (isSheetSelectionRequiredError(caught)) {
+        setSheetSelection(caught);
+        setState("selecting_sheet");
+        return false;
+      }
       setError("Không thể tạo bản xem trước. Vui lòng kiểm tra file và thử lại.");
       setState("error");
+      return false;
     }
   }
 
@@ -124,7 +148,7 @@ export function useImportWorkflow({
       setResult(commitResult);
       setState("success");
     } catch {
-      setError("Không thể hoàn tất import. Bạn có thể thử lại an toàn.");
+      setError("Không thể hoàn tất nhập dữ liệu. Bạn có thể thử lại an toàn.");
       setState("error");
     }
   }
@@ -134,6 +158,7 @@ export function useImportWorkflow({
     preview,
     result,
     error,
+    sheetSelection,
     warningsConfirmed,
     setWarningsConfirmed,
     selectFile,
@@ -145,4 +170,17 @@ export function useImportWorkflow({
       (!hasWarnings || warningsConfirmed),
     hasWarnings,
   };
+}
+
+function isSheetSelectionRequiredError(
+  value: unknown,
+): value is ImportSheetSelectionRequiredError {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "code" in value &&
+    value.code === "sheet_selection_required" &&
+    "candidates" in value &&
+    Array.isArray(value.candidates)
+  );
 }
